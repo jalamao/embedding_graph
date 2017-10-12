@@ -1,0 +1,8 @@
+<div id="widgetinteract-{{widget.pk}}" rel="{{widget.pk}}" class="widgetinteractdialog" title="{{widget.name}} wants your input!">
+<form id="interactionform-{{widget.pk}}" name="interactionform-{{widget.pk}}">
+    {% for cycle in cycles %}
+    <input type="checkbox" name="cycle" value="{{ cycle.value }}" style="display:inline;width:auto;">{{ cycle.nice_value }}<br>
+    {% endfor %}
+    <input type="hidden" name="widget_id" value="{{widget.pk}}">
+</form>
+</div>

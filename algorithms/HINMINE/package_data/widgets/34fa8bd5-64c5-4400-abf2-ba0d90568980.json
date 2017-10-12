@@ -1,0 +1,145 @@
+[
+  {
+    "model": "workflows.abstractwidget", 
+    "fields": {
+      "category": "1ff6ffa5-dee7-4f59-9d8f-1986cd2811e6", 
+      "treeview_image": "", 
+      "uid": "34fa8bd5-64c5-4400-abf2-ba0d90568980", 
+      "is_streaming": false, 
+      "package": "cf_netSDM", 
+      "interaction_view": "cf_hinmine_decompose_interact", 
+      "has_progress_bar": false, 
+      "image": "", 
+      "description": "", 
+      "static_image": "", 
+      "action": "cf_hinmine_decompose", 
+      "visualization_view": "", 
+      "streaming_visualization_view": "", 
+      "post_interact_action": "cf_hinmine_decompose_post", 
+      "wsdl_method": "", 
+      "wsdl": "", 
+      "interactive": true, 
+      "windows_queue": false, 
+      "order": 1, 
+      "name": "HinMine-Decompose"
+    }
+  }, 
+  {
+    "model": "workflows.abstractinput", 
+    "fields": {
+      "widget": "34fa8bd5-64c5-4400-abf2-ba0d90568980", 
+      "name": "network", 
+      "short_name": "net", 
+      "default": "", 
+      "description": "Heterogeneous information network", 
+      "required": true, 
+      "multi": false, 
+      "parameter_type": null, 
+      "variable": "network", 
+      "parameter": false, 
+      "order": 1, 
+      "uid": "761b2cae-b328-45d0-827d-84b7e9857dd1"
+    }
+  }, 
+  {
+    "model": "workflows.abstractinput", 
+    "fields": {
+      "widget": "34fa8bd5-64c5-4400-abf2-ba0d90568980", 
+      "name": "heuristic", 
+      "short_name": "heu", 
+      "default": "tf", 
+      "description": "Decomposition heuristic", 
+      "required": true, 
+      "multi": false, 
+      "parameter_type": "select", 
+      "variable": "heuristic", 
+      "parameter": true, 
+      "order": 2, 
+      "uid": "e7f65432-b230-4ba2-8d21-991841edfb9f"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoutput", 
+    "fields": {
+      "widget": "34fa8bd5-64c5-4400-abf2-ba0d90568980", 
+      "name": "network", 
+      "short_name": "net", 
+      "description": "Homogeneous network", 
+      "variable": "network", 
+      "order": 1, 
+      "uid": "469b93ba-3f52-47d6-a228-d57feee45092"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoption", 
+    "fields": {
+      "name": "GR - Gain Ratio", 
+      "uid": "079d7b92-06d7-47ef-be17-feab0fcc3c19", 
+      "value": "gr", 
+      "abstract_input": "e7f65432-b230-4ba2-8d21-991841edfb9f"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoption", 
+    "fields": {
+      "name": "TF-IDF - Term Frequency-Inverse Document Frequency", 
+      "uid": "19c4539d-1587-40f6-9d09-e384cff4c2bb", 
+      "value": "idf", 
+      "abstract_input": "e7f65432-b230-4ba2-8d21-991841edfb9f"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoption", 
+    "fields": {
+      "name": "\u0394-IDF - Delta-IDF", 
+      "uid": "201964b1-de56-4e15-92fa-d26c82531f1f", 
+      "value": "delta", 
+      "abstract_input": "e7f65432-b230-4ba2-8d21-991841edfb9f"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoption", 
+    "fields": {
+      "name": "IG - Information Gain", 
+      "uid": "3e7bf1a1-58ba-4d7d-9aed-1800c98b29f3", 
+      "value": "ig", 
+      "abstract_input": "e7f65432-b230-4ba2-8d21-991841edfb9f"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoption", 
+    "fields": {
+      "name": "TF - Term Frequency", 
+      "uid": "3e8a7cf0-7a2f-4fa0-ab12-aad9f22e1d61", 
+      "value": "tf", 
+      "abstract_input": "e7f65432-b230-4ba2-8d21-991841edfb9f"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoption", 
+    "fields": {
+      "name": "RF - Relative Frequency", 
+      "uid": "4dadef0f-05d8-43db-8a03-485da250a06f", 
+      "value": "rf", 
+      "abstract_input": "e7f65432-b230-4ba2-8d21-991841edfb9f"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoption", 
+    "fields": {
+      "name": "BM25 - Okapi", 
+      "uid": "81a70931-dd11-4fef-a821-b47737931531", 
+      "value": "okapi", 
+      "abstract_input": "e7f65432-b230-4ba2-8d21-991841edfb9f"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoption", 
+    "fields": {
+      "name": "\u03c72", 
+      "uid": "e20184cf-123d-417f-a2f1-4ac827f5d414", 
+      "value": "chi", 
+      "abstract_input": "e7f65432-b230-4ba2-8d21-991841edfb9f"
+    }
+  }
+]

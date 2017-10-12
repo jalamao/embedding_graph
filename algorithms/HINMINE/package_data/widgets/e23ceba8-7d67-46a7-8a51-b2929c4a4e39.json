@@ -1,0 +1,73 @@
+[
+  {
+    "model": "workflows.abstractwidget", 
+    "fields": {
+      "category": "1ff6ffa5-dee7-4f59-9d8f-1986cd2811e6", 
+      "treeview_image": "", 
+      "uid": "e23ceba8-7d67-46a7-8a51-b2929c4a4e39", 
+      "is_streaming": false, 
+      "package": "cf_netSDM", 
+      "interaction_view": "", 
+      "has_progress_bar": false, 
+      "image": "", 
+      "description": "TODO", 
+      "static_image": "", 
+      "action": "cf_load_gml", 
+      "visualization_view": "", 
+      "streaming_visualization_view": "", 
+      "post_interact_action": "", 
+      "wsdl_method": "", 
+      "wsdl": "", 
+      "interactive": false, 
+      "windows_queue": false, 
+      "order": 1, 
+      "name": "Read GML from file"
+    }
+  }, 
+  {
+    "model": "workflows.abstractinput", 
+    "fields": {
+      "widget": "e23ceba8-7d67-46a7-8a51-b2929c4a4e39", 
+      "name": "File", 
+      "short_name": "fl", 
+      "default": "", 
+      "description": "File containing gml network", 
+      "required": true, 
+      "multi": false, 
+      "parameter_type": "file", 
+      "variable": "file", 
+      "parameter": true, 
+      "order": 1, 
+      "uid": "8a7646ae-8680-4ff6-bd53-3c1f816d9aef"
+    }
+  }, 
+  {
+    "model": "workflows.abstractinput", 
+    "fields": {
+      "widget": "e23ceba8-7d67-46a7-8a51-b2929c4a4e39", 
+      "name": "Delimiter", 
+      "short_name": "del", 
+      "default": "", 
+      "description": "Delimiter for instances with multiple labels", 
+      "required": true, 
+      "multi": false, 
+      "parameter_type": "text", 
+      "variable": "label_delimiter", 
+      "parameter": true, 
+      "order": 2, 
+      "uid": "9871646f-b1f2-4bee-b913-a8570e01ac31"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoutput", 
+    "fields": {
+      "widget": "e23ceba8-7d67-46a7-8a51-b2929c4a4e39", 
+      "name": "Network", 
+      "short_name": "net", 
+      "description": "Loaded network", 
+      "variable": "net", 
+      "order": 1, 
+      "uid": "728f157d-16ac-407b-9721-c71e000c3909"
+    }
+  }
+]

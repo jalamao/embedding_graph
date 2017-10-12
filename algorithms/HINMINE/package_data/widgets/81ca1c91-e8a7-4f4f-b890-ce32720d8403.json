@@ -1,0 +1,68 @@
+[
+  {
+    "model": "workflows.abstractwidget", 
+    "fields": {
+      "category": "1ff6ffa5-dee7-4f59-9d8f-1986cd2811e6", 
+      "treeview_image": "", 
+      "uid": "81ca1c91-e8a7-4f4f-b890-ce32720d8403", 
+      "is_streaming": false, 
+      "package": "cf_netSDM", 
+      "interaction_view": "", 
+      "has_progress_bar": false, 
+      "image": "", 
+      "description": "TODO", 
+      "static_image": "", 
+      "action": "cf_hinmine_propositionalize", 
+      "visualization_view": "", 
+      "streaming_visualization_view": "", 
+      "post_interact_action": "", 
+      "wsdl_method": "", 
+      "wsdl": "", 
+      "interactive": false, 
+      "windows_queue": false, 
+      "order": 1, 
+      "name": "HinMine-Propositionalize"
+    }
+  }, 
+  {
+    "model": "workflows.abstractinput", 
+    "fields": {
+      "widget": "81ca1c91-e8a7-4f4f-b890-ce32720d8403", 
+      "name": "network", 
+      "short_name": "net", 
+      "default": "", 
+      "description": "Network with decompositions calculated", 
+      "required": true, 
+      "multi": false, 
+      "parameter_type": null, 
+      "variable": "network", 
+      "parameter": false, 
+      "order": 1, 
+      "uid": "e0bba966-ba25-42c7-8d30-9beca6db2b4a"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoutput", 
+    "fields": {
+      "widget": "81ca1c91-e8a7-4f4f-b890-ce32720d8403", 
+      "name": "train_features", 
+      "short_name": "tra", 
+      "description": "Scipy table of feature vectors for the labelled nodes", 
+      "variable": "train_features", 
+      "order": 1, 
+      "uid": "37dbc723-d3ca-4fd7-a044-b1788eebe87d"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoutput", 
+    "fields": {
+      "widget": "81ca1c91-e8a7-4f4f-b890-ce32720d8403", 
+      "name": "test_features", 
+      "short_name": "tes", 
+      "description": "Scipy table of feature vectors for the unlabelled nodes", 
+      "variable": "test_features", 
+      "order": 2, 
+      "uid": "dd7dab44-f139-4094-8a20-80263c05c7b8"
+    }
+  }
+]
