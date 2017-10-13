@@ -1,0 +1,56 @@
+[
+  {
+    "model": "workflows.abstractwidget", 
+    "fields": {
+      "category": "1ff6ffa5-dee7-4f59-9d8f-1986cd2811e6", 
+      "treeview_image": "", 
+      "uid": "c3b7ff9a-8de1-4497-90fa-8e541aed4c6c", 
+      "is_streaming": false, 
+      "package": "cf_netSDM", 
+      "interaction_view": "", 
+      "has_progress_bar": false, 
+      "image": "", 
+      "description": "", 
+      "static_image": "", 
+      "action": "cf_hinmine_label_propagation", 
+      "visualization_view": "", 
+      "streaming_visualization_view": "", 
+      "post_interact_action": "", 
+      "wsdl_method": "", 
+      "wsdl": "", 
+      "interactive": false, 
+      "windows_queue": false, 
+      "order": 1, 
+      "name": "Apply Label Propagation"
+    }
+  }, 
+  {
+    "model": "workflows.abstractinput", 
+    "fields": {
+      "widget": "c3b7ff9a-8de1-4497-90fa-8e541aed4c6c", 
+      "name": "Network", 
+      "short_name": "net", 
+      "default": "", 
+      "description": "Network with decompositions calculated", 
+      "required": true, 
+      "multi": false, 
+      "parameter_type": null, 
+      "variable": "network", 
+      "parameter": false, 
+      "order": 1, 
+      "uid": "43c5d387-c603-4165-9daf-932b15e247f1"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoutput", 
+    "fields": {
+      "widget": "c3b7ff9a-8de1-4497-90fa-8e541aed4c6c", 
+      "name": "Result", 
+      "short_name": "res", 
+      "description": "A ranked list of possible labels for each instance of the data", 
+      "variable": "result", 
+      "order": 1, 
+      "uid": "434049ba-a537-4f19-9ebc-54e318a1dd89"
+    }
+  }
+]

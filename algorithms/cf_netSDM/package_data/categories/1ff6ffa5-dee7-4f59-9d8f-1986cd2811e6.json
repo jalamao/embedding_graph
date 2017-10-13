@@ -1,0 +1,9 @@
+{
+  "model": "workflows.category", 
+  "fields": {
+    "name": "netSDM", 
+    "parent": null, 
+    "order": 1, 
+    "uid": "1ff6ffa5-dee7-4f59-9d8f-1986cd2811e6"
+  }
+}
