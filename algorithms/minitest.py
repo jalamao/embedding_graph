@@ -7,7 +7,7 @@ import numpy as np
 ## load test gml and read it further on..
 
 heuristic = "idf"
-cycle = {'node_list': [u'movie', u'person'], 'edge_list': [u'directed_by', u'directed']}
+cycle = {'node_list': [u'movie', u'person'], 'edge_list': [u'directed_by']}
 example_net = load_gml("../data/imdb_gml.gml","---")
 decomposed = hinmine_decompose(example_net,heuristic,cycle=cycle)
 propositionalized = hinmine_propositionalize(decomposed)

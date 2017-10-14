@@ -213,9 +213,6 @@ def remove_hyper(network, node):
     network.remove_node(node)
 
 
-
-
-
 def label_propagation_normalization(matrix):
     matrix = matrix.tocsr()
     try:
