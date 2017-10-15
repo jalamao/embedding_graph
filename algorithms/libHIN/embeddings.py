@@ -50,7 +50,8 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=4):
             if norm > 0:
                 pr = pr / np.linalg.norm(pr, 2)
                 vectors[index, :] = pr
-            
+
+    ## return bo dodelan, verjetno zgolj dve matriki tho.
     train_features = {
         'data': vectors[hin.train_indices, :],
         'target': hin.label_matrix[hin.train_indices, :],
