@@ -12,3 +12,6 @@ cycle = {'node_list': [u'movie', u'person', u'movie'], 'edge_list': [u'features'
 decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=cycle)
 embedding = hinmine_embedding(decomposed)
 print(embedding)
+
+## avtomatic cycle detection?
+## word2vec heuristika?
