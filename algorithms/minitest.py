@@ -3,17 +3,13 @@
 from HINMINE.library_cli import *
 import numpy as np
 
-## from HINMINE.lib.HIN import HeterogeneousInformationNetwork
 ## load test gml and read it further on..
-
-heuristic = "idf"
-cycle = {'node_list': [u'movie', u'person'], 'edge_list': [u'directed_by']}
+heuristic = "tf"
+#cycle = {'node_list': [u'movie', u'person',u'movie'], 'edge_list': [u'features',u'acts_in']}
+cycle = ['movie_____features_____person_____acts_in_____movie']
 example_net = load_gml("../data/imdb_gml.gml","---")
 decomposed = hinmine_decompose(example_net,heuristic,cycle=cycle)
 propositionalized = hinmine_propositionalize(decomposed)
-
-data = propositionalized['train_features']
+data = propositionalized
 print(data)
-print(len(data['target_names']))
-print(np.count_nonzero(data['target']))
-## minitests
+#print(np.count_nonzero(data['data'])) ## to vrne 0, kar ni isto kot CF-workflow
