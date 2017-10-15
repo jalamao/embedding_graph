@@ -2,7 +2,7 @@
 
 from math import log
 import numpy as np
-
+from collections import defaultdict
 
 def aggregate_sum(input_thing, classes, universal_set):
     if type(input_thing) == list:
@@ -333,7 +333,5 @@ def cf_hinmine_decompose_post(postdata, input_dict, output_dict):
                                     None,
                                     hin.midpoint_generator(node_sequence, edge_sequence),
                                     degrees=degrees)
-
-        logging.info('%s done' % input_dict['heuristic'])
 
     return {'network': hin}

@@ -1,7 +1,10 @@
 ## this is the embedding code
+from dataStructures import HeterogeneousInformationNetwork
+from core import stochastic_normalization,page_rank
+import numpy as np
 
-def hinmine_embedding(input_dict):
-    hin = input_dict['network']
+def hinmine_embedding(network):
+    hin = network
     assert isinstance(hin, HeterogeneousInformationNetwork)
     n = hin.decomposed['decomposition'].shape[0]
     vectors = np.zeros((n, n))
