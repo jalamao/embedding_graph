@@ -2,8 +2,11 @@
 from networkx import read_gml
 from dataStructures import HeterogeneousInformationNetwork
 
-def load_gml(file,label_delimiter=" "):
-    net = read_gml(file)
+def load_hinmine_object(infile,label_delimiter=" "):
+    if ".gml" in infile:
+        net = read_gml(infile)
+    else:
+        net = infile
     hin = HeterogeneousInformationNetwork(net, label_delimiter)
     train_indices = []
     test_indices = []

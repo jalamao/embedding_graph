@@ -1,14 +1,32 @@
 ## this is the embedding code
 from dataStructures import HeterogeneousInformationNetwork
-from core import stochastic_normalization,page_rank
+from core import stochastic_normalization, page_rank
 import numpy as np
 
-def hinmine_embedding(network):
-    hin = network
+def hinmine_embedding(hin,use_decomposition=True):
+
+    # embed the input network to a term matrix    
     assert isinstance(hin, HeterogeneousInformationNetwork)
-    n = hin.decomposed['decomposition'].shape[0]
+
+    ## special treatment of the decomposed network appears here
+    if use_decomposition:
+        n = hin.decomposed['decomposition'].shape[0]
+        graph = stochastic_normalization(hin.decomposed['decomposition'])
+    
+    else:
+
+        ## this works on a raw network.
+        n = len(hin.graph)
+        if hin.weight_tag != False:
+            converted = nx.to_scipy_sparse_matrix(hin.graph,weight=hin.weighted)
+        else:
+            converted = nx.to_scipy_sparse_matrix(hin.graph)
+            
+        graph = stochastic_normalization(converted)
+
     vectors = np.zeros((n, n))
-    graph = stochastic_normalization(hin.decomposed['decomposition'])
+
+    ## to se da paralelno!
     for index in range(n):
         pr = page_rank(graph, [index], try_shrink=True)
         norm = np.linalg.norm(pr, 2)

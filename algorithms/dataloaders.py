@@ -1,9 +1,9 @@
 ##########################
 import networkx as nx
 
-def read_rfa():
+def read_rfa(fname):
     G = nx.MultiDiGraph()
-    with open("../data/rfa_all.NL-SEPARATED.txt") as vote:
+    with open(fname) as vote:
 
         ## init parts
         currentN0 = ""
@@ -28,12 +28,13 @@ def read_rfa():
                     G.add_node(currentN1,type="person", labels="candidate")
                     G.add_node(currentN0,labels="voter",type='person')
                     G.add_edge(currentN1,currentN0,type="votes_for")
-        return G
+                    G.add_edge(currentN0,currentN1,type="voted_by")
+    return G
 
 if __name__ == "__main__":
 
-    ## read the graph
-    voting_graph = read_rfa()
+    ## read the graph1
+    voting_graph = read_rfa("../data/smaller.txt")
 
     converted = nx.convert_node_labels_to_integers(voting_graph,first_label=0)        
     #nx.write_edgelist(converted, "../data/el.txt")    

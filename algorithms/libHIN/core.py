@@ -17,7 +17,6 @@ def stochastic_normalization(matrix):
     nzs = np.where(d > 0)
     d[nzs] = 1 / d[nzs]
     matrix = (sp.diags(d, 0).tocsc().dot(matrix)).transpose()
-    logging.info('Google matrix created.')
     return matrix
 
 

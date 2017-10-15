@@ -304,17 +304,12 @@ def hinmine_decompose(network, heuristic, cycle=None):
     if cycle is None:
         candidates = network.calculate_decomposition_candidates()
         raise Exception('No decomposition cycle provided. Candidate cycles are: %s' % candidates)
-    return cf_hinmine_decompose_post({'cycle': cycle},
-                                     {'network': network,
-                                      'heuristic': heuristic},
-                                     {})['network']
 
-def cf_hinmine_decompose_post(postdata, input_dict, output_dict):
     try:
-        cycles = postdata['cycle']
+        cycles = cycle
     except KeyError:
         raise Exception('No decomposition cycle selected')
-    hin = input_dict['network']
+    hin = network
     for cycle in cycles:
         cycle = cycle.split('_____')
         node_sequence = []
@@ -329,9 +324,9 @@ def cf_hinmine_decompose_post(postdata, input_dict, output_dict):
             for node in item:
                 degrees[node] += 1
         hin.decompose_from_iterator('decomposition',
-                                    input_dict['heuristic'],
+                                    heuristic,
                                     None,
                                     hin.midpoint_generator(node_sequence, edge_sequence),
                                     degrees=degrees)
 
-    return {'network': hin}
+    return hin
