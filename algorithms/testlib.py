@@ -16,7 +16,7 @@ decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=cycle)
 
 ## does embedding work as it is?3
 embedding = hinmine_embedding(decomposed)
-print(np.count_nonzero(embedding['train_features']['data']))
+print("train shape{}, test shape {}".format(embedding['data'].shape,embedding['targets'].shape))
 
 ### TODOs
 

@@ -10,7 +10,7 @@ def pr_kernel(index_row):
         pr = pr / np.linalg.norm(pr, 2)
         return (index_row,pr)
                 
-def hinmine_embedding(hin,use_decomposition=True, parallel=0):
+def hinmine_embedding(hin,use_decomposition=True, parallel=0,return_type="raw"):
 
     global graph
     # embed the input network to a term matrix    
@@ -44,7 +44,6 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=0):
                 vectors[pr_vector[0],:] = pr_vector[1]
     
     else:
-        ## to se da paralelno!
         for index in range(n):
             pr = page_rank(graph, [index], try_shrink=True)
             norm = np.linalg.norm(pr, 2)
@@ -52,16 +51,20 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=0):
                 pr = pr / np.linalg.norm(pr, 2)
                 vectors[index, :] = pr
 
-    ## return bo dodelan, verjetno zgolj dve matriki tho.
-    train_features = {
-        'data': vectors[hin.train_indices, :],
-        'target': hin.label_matrix[hin.train_indices, :],
-        'target_names': [str(x) for x in hin.label_list],
-        'DESCR': None
-    }
-    test_features = {
-        'data': vectors[hin.test_indices, :],
-        'target_names': [str(x) for x in hin.label_list],
-        'DESCR': None
-    }
-    return {'train_features': train_features, 'test_features': test_features}
+    if return_type == "raw":
+        return {'data' : vectors,'targets' : hin.label_matrix}
+
+    else:
+        ## return bo dodelan, verjetno zgolj dve matriki tho.
+        train_features = {
+            'data': vectors[hin.train_indices, :],
+            'target': hin.label_matrix[hin.train_indices, :],
+            'target_names': [str(x) for x in hin.label_list],
+            'DESCR': None
+        }
+        test_features = {
+            'data': vectors[hin.test_indices, :],
+            'target_names': [str(x) for x in hin.label_list],
+            'DESCR': None
+        }
+        return {'train_features': train_features, 'test_features': test_features}
