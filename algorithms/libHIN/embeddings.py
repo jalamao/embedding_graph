@@ -40,7 +40,8 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=0):
         p = mp.Pool(processes=parallel)
         results = p.map(pr_kernel,range(n))
         for pr_vector in results:
-            vectors[pr_vector[0],:] = pr_vector[1]
+            if pr_vector != None:
+                vectors[pr_vector[0],:] = pr_vector[1]
     
     else:
         ## to se da paralelno!

@@ -16,6 +16,12 @@ decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=cycle)
 embedding = hinmine_embedding(decomposed)
 print(np.count_nonzero(embedding['train_features']['data']))
 
+### TODOs
+
+# 1.) parallel doesnt work well
+# 2.) finalframe as one blob
+# 3.) test some models finally!
+
 ## naredi, da bo delal brez dekompozicije!
 # voting_graph = read_rfa("../data/smaller.txt") #rfa_all.NL-SEPARATED.txt
 # converted = nx.convert_node_labels_to_integers(voting_graph,first_label=0)        
