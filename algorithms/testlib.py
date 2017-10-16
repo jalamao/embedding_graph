@@ -9,10 +9,12 @@ import numpy as np
 
 # ## load the network
 
-example_net = load_hinmine_object("../data/imdb_gml.gml","---")
-cycle = ['movie_____features_____person_____acts_in_____movie']
+example_net = load_hinmine_object("../data/imdb_gml.gml","---") ## add support for weight
+cycle = ['movie_____features_____person_____acts_in_____movie'] ## decomposition cycle
 ## split and re-weight
 decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=cycle)
+
+## does embedding work as it is?3
 embedding = hinmine_embedding(decomposed)
 print(np.count_nonzero(embedding['train_features']['data']))
 

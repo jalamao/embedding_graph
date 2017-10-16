@@ -25,7 +25,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=0):
 
         ## this works on a raw network.
         n = len(hin.graph)
-        if hin.weight_tag != False:
+        if hin.weighted != False:
             converted = nx.to_scipy_sparse_matrix(hin.graph,weight=hin.weighted)
         else:
             converted = nx.to_scipy_sparse_matrix(hin.graph)
