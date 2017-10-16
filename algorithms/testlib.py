@@ -1,6 +1,6 @@
 ## this tests the libHIN
 
-from libHIN.IO import load_hinmine_object ## gml_parser
+from libHIN.IO import load_hinmine_object, generate_cv_folds  ## gml_parser
 from libHIN.embeddings import hinmine_embedding ## basic embedding
 from libHIN.decomposition import * ## basic embedding
 from dataloaders import read_rfa
@@ -18,11 +18,22 @@ decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=cycle)
 embedding = hinmine_embedding(decomposed)
 print("train shape{}, test shape {}".format(embedding['data'].shape,embedding['targets'].shape))
 
+## CV classification
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.ensemble import RandomForestClassifier
+
+for fold in generate_cv_folds(embedding['data'],embedding['targets']):
+    X,Xt,Y,Yt = fold
+    forest = RandomForestClassifier(n_estimators=100, random_state=1)
+    multi_target_forest = MultiOutputClassifier(forest, n_jobs=4)
+    predictions = multi_target_forest.fit(X, Y).predict(Xt)
+    
 ### TODOs
 
-# 1.) parallel doesnt work well
-# 2.) finalframe as one blob
-# 3.) test some models finally!
+## kako oceniti uspesnost?
+## pipeline cez vec dataset - ov.
 
 ## naredi, da bo delal brez dekompozicije!
 # voting_graph = read_rfa("../data/smaller.txt") #rfa_all.NL-SEPARATED.txt
