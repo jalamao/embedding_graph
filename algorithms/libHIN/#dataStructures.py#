@@ -2,8 +2,9 @@
 
 import networkx as nx
 import numpy as np
+import logging
 import scipy.sparse as sp
-from .decomposition import get_calculation_method
+from decomposition import get_calculation_method
 
 
 class Class:
@@ -109,7 +110,7 @@ class HeterogeneousInformationNetwork:
         self.create_label_matrix()
 
     def create_label_matrix(self, weights=None):
-
+        logging.info('Creating label matrix...')
         self.label_matrix = np.zeros((len(self.node_list), len(self.label_list)))
         for i, label in enumerate(self.label_list):
             member_indices = [self.node_indices[x] for x in label.members]
@@ -194,6 +195,7 @@ class HeterogeneousInformationNetwork:
         classes = [lab for lab in self.label_list if lab and len(lab.not_test_members) > 0]
         universal_set = list(set(self.train_ids).union(self.validate_ids))
         universal_inv = {}
+        logging.info('Inverting universal_set')
         for i, item in enumerate(universal_set):
             universal_inv[item] = i
         universal_set = set(universal_set)
@@ -216,7 +218,7 @@ class HeterogeneousInformationNetwork:
         for item in generator:
             i += 1
             if i % 1000 == 0:
-                pass
+                logging.info('Completed %i generators' % i)
             importances = importance_calculator(classes, universal_set, item, n, degrees=degrees, avgdegree=avgdegree)
             importance = np.sum(importances, axis=0)
             i1 = [self.node_indices[x] for x in item]
@@ -234,12 +236,12 @@ class HeterogeneousInformationNetwork:
     def midpoint_generator(self, node_sequence, edge_sequence):
         if len(node_sequence) % 2 == 0:
             raise Exception('In a split of length %i, a midpoint is not well defined!' % len(node_sequence))
-        middle_type = node_sequence[int(len(node_sequence) / 2)]
+        middle_type = node_sequence[len(node_sequence) / 2]
         # forward_sequence = %TODO: INVERSE SEQUENCES!!!!!!!!!
         for node in self.graph:
             if self.graph.node[node]['type'] == middle_type:
                 points = [node]
-                i = int(len(node_sequence)/2 + 1)
+                i = len(node_sequence)/2 + 1
                 while i < len(node_sequence):
                     current_type = node_sequence[i]
                     new_points = []

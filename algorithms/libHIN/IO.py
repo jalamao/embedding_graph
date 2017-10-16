@@ -1,6 +1,6 @@
 ## This  part of library reads various files
 from networkx import read_gml
-from dataStructures import HeterogeneousInformationNetwork
+from .dataStructures import HeterogeneousInformationNetwork
 
 def load_hinmine_object(infile,label_delimiter=" "):
     if ".gml" in infile:

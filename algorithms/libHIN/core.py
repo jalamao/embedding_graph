@@ -2,11 +2,9 @@
 import networkx as nx
 import numpy as np
 import scipy.sparse as sp
-import logging
 from collections import defaultdict
 
 def stochastic_normalization(matrix):
-    logging.info('Creating google matrix...')
     matrix = matrix.tolil()
     try:
         matrix.setdiag(0)
@@ -18,7 +16,6 @@ def stochastic_normalization(matrix):
     d[nzs] = 1 / d[nzs]
     matrix = (sp.diags(d, 0).tocsc().dot(matrix)).transpose()
     return matrix
-
 
 def page_rank(matrix, start_nodes,
               epsilon=1e-6,
@@ -72,7 +69,8 @@ def page_rank(matrix, start_nodes,
         diff = new_diff
         rank_vec = new_rank
     if try_shrink and shrink:
-        ret = np.zeros(size)
+        ret = np.zeros(size)        
+        rank_vec = rank_vec.T[0] ## this works for both python versions
         ret[which] = rank_vec
         ret[start_nodes] = 0
         return ret.flatten()

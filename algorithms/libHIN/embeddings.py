@@ -1,6 +1,6 @@
 ## this is the embedding code
-from dataStructures import HeterogeneousInformationNetwork
-from core import stochastic_normalization, page_rank
+from .dataStructures import HeterogeneousInformationNetwork
+from .core import stochastic_normalization, page_rank
 import numpy as np
 
 def pr_kernel(index_row):
@@ -10,7 +10,7 @@ def pr_kernel(index_row):
         pr = pr / np.linalg.norm(pr, 2)
         return (index_row,pr)
                 
-def hinmine_embedding(hin,use_decomposition=True, parallel=4):
+def hinmine_embedding(hin,use_decomposition=True, parallel=0):
 
     global graph
     # embed the input network to a term matrix    
