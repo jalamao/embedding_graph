@@ -23,20 +23,18 @@ print("train shape{}, test shape {}".format(embedding['data'].shape,embedding['t
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.ensemble import RandomForestClassifier
-
-# for fold in generate_cv_folds(embedding['data'],embedding['targets']):
-#     X,Xt,Y,Yt = fold
-#     forest = RandomForestClassifier(n_estimators=100, random_state=1)
-#     multi_target_forest = MultiOutputClassifier(forest, n_jobs=4)
-#     predictions = multi_target_forest.fit(X, Y).predict(Xt)
-
 from sklearn.model_selection import cross_val_score
-forest = RandomForestClassifier(n_estimators=100, random_state=1)
-#clf = MultiOutputClassifier(forest, n_jobs=4)
-scores = cross_val_score(forest, embedding['data'], embedding['targets'][:,0], cv=10)
+import autosklearn.classification
+
+
+# forest = RandomForestClassifier(n_estimators=100, random_state=1)
+# #clf = MultiOutputClassifier(forest, n_jobs=4)
+# scores = cross_val_score(forest, embedding['data'], embedding['targets'][:,0], cv=10)
+# print(scores)
+
+cls = autosklearn.classification.AutoSklearnClassifier()
+scores = cross_val_score(cls, embedding['data'], embedding['targets'][:,0], cv=10)
 print(scores)
-
-
 ### TODOs
 
 ## kako oceniti uspesnost?
