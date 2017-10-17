@@ -153,11 +153,6 @@ def shrink_hyper_by_pr(network, node_list, pr, percentage, enriched_symbols):
         for node, score in new_node_list[int(percentage * len(new_node_list)):]:
             if node not in enriched_symbols:
                 remove_hyper(network, node)
-    #         # network.remove_node(node)
-    # else:
-    #     for node in enriched_symbols:
-    #         if node in network:
-    #             network.remove_node(node)
 
 
 def remove_hyper(network, node):
