@@ -26,7 +26,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 import autosklearn.classification
 
-
 # forest = RandomForestClassifier(n_estimators=100, random_state=1)
 # #clf = MultiOutputClassifier(forest, n_jobs=4)
 # scores = cross_val_score(forest, embedding['data'], embedding['targets'][:,0], cv=10)
@@ -39,6 +38,7 @@ print(scores)
 
 ## kako oceniti uspesnost?
 ## pipeline cez vec dataset - ov.
+## dodaj w2w
 
 ## naredi, da bo delal brez dekompozicije!
 # voting_graph = read_rfa("../data/smaller.txt") #rfa_all.NL-SEPARATED.txt
