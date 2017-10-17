@@ -1,0 +1,53 @@
+gtrieScanner Results
+------------------------------------------
+General Information
+
+Start of Computation: 15h51m33s 17/10/2017
+End of Computation: 15h51m33s 17/10/2017
+
+Subgraph Size: 4
+Graph File: "example_gx.txt"
+Directed: NO
+Nr Nodes: 252
+Nr Edges: 399
+
+Method: ESU on original network
+Different Types of Subgraphs Found [Original Network]: 5
+Subgraph Occurrences Found [Original Network]: 4316
+Time for computing census on original network: 0.009412s
+Average time for census on random network: 0.000000s
+
+Number of random networks: 0
+Random seed: 1508248293
+Exchanges per edge: 3
+Number of tries per exchange: 10
+------------------------------------------
+Motif Analysis Results
+
+Graph   Org_Freq |  Z-score |    Rnd_Avg +/-    Rnd_Dev
+
+0110
+1001
+1000
+0100        2982 |     0.00 |       0.00 +/-       0.00
+
+0111
+1000
+1000
+1000        1200 |     0.00 |       0.00 +/-       0.00
+
+0111
+1010
+1100
+1000         109 |     0.00 |       0.00 +/-       0.00
+
+0110
+1001
+1001
+0110          21 |     0.00 |       0.00 +/-       0.00
+
+0111
+1011
+1100
+1100           4 |     0.00 |       0.00 +/-       0.00
+
