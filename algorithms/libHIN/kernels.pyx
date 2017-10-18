@@ -22,13 +22,9 @@ def shortest_path_kernel(np.ndarray A):
                 Sp[i,j]=A[i,j]
 
     # shortest paths
-    # for k in range(n):
-    #     for i in range(n):
-    #         for j in range(n):
-    #      if Sp[i,j] > Sp[i,k] + Sp[k,j]:
-    #          #Sp[i,j]=Sp[i,k]+Sp[k,j]
-    # return Sp
-
-# if __name__ == "__main__":
-#     mx = np.random.randint(2, size=(5, 5))
-#     shortest_path_kernel(mx)
+    for k in range(n):
+        for i in range(n):
+            for j in range(n):
+                if Sp[i,j] > Sp[i,k] + Sp[k,j]:
+                    Sp[i,j]=Sp[i,k]+Sp[k,j]
+    return Sp
