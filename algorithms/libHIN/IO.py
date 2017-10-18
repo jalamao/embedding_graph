@@ -4,10 +4,12 @@ from .dataStructures import HeterogeneousInformationNetwork
 import numpy as np
 
 def load_hinmine_object(infile,label_delimiter=" "):
+
     if ".gml" in infile:
         net = read_gml(infile)
     else:
         net = infile
+
     hin = HeterogeneousInformationNetwork(net, label_delimiter)
     train_indices = []
     test_indices = []

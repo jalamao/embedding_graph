@@ -3,28 +3,35 @@
 from libHIN.IO import load_hinmine_object, generate_cv_folds  ## gml_parser
 from libHIN.embeddings import hinmine_embedding ## basic embedding
 from libHIN.decomposition import * ## basic embedding
-from dataloaders import read_rfa
+from dataloaders import read_rfa, read_bitcoin, read_web
 from libHIN.label_propagation import *
 import networkx as nx
 import numpy as np
 
 # ## load the network
 
-example_net = load_hinmine_object("../data/imdb_gml.gml","---") ## add support for weight
-cycle = ['movie_____features_____person_____acts_in_____movie'] ## decomposition cycle
+#example_net = load_hinmine_object("../data/imdb_gml.gml","---") ## add support for weight
+#cycle = ['movie_____features_____person_____acts_in_____movie'] ## decomposition cycle
+
 ## split and re-weight
-decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=cycle)
+#decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=cycle)
 
 ## test label propagation
-result = run_label_propagation(decomposed)
-print(result)
-
+# result = run_label_propagation(decomposed)
+# print(result)
 ## does embedding work as it is?3
-embedding = hinmine_embedding(decomposed)
-print("train shape{}, test shape {}".format(embedding['data'].shape,embedding['targets'].shape))
+
+#rx = read_bitcoin("../data/soc-sign-bitcoinotc.csv")
+rx = read_web("../data/web-BerkStan.txt")
+rx = load_hinmine_object(rx)
+rx.weighted = "weight" ## assign the weight tag
+embedding = hinmine_embedding(rx,use_decomposition=False,parallel=8)
+print(embedding)
+#print("train shape{}, test shape {}".format(embedding['data'].shape,embedding['targets'].shape))
+
+
 
 ## CV classification
-
 #from sklearn.ensemble import RandomForestClassifier
 #from sklearn.multioutput import MultiOutputClassifier
 #from sklearn.ensemble import RandomForestClassifier

@@ -1,5 +1,6 @@
 ##########################
 import networkx as nx
+import numpy as np
 
 def read_rfa(fname):
     G = nx.MultiDiGraph()
@@ -31,18 +32,39 @@ def read_rfa(fname):
                     G.add_edge(currentN0,currentN1,type="voted_by")
     return G
 
+def read_bitcoin(fname):
+
+    G = nx.MultiDiGraph()
+    with open(fname) as fn:
+        for line in fn:
+            source,target,weight,timestamp = line.strip().split(",")
+            label = ""
+            if int(weight) >= 0:
+                label = "+"
+            else:
+                label = "-"
+            G.add_node(source, type="agent",labels="w1")
+            G.add_node(target, type="agent",labels="opposite")
+            G.add_edge(source,target,type="sended_money_to",weight=np.absolute(int(weight)/10))
+
+    return G
+
+def read_web(fname):
+
+    G = nx.MultiDiGraph()
+    with open(fname) as fn:
+        for line in fn:
+            try:
+                source, target = line.strip().split()
+                G.add_edge(source,target,weight=1)
+            except:
+                pass
+
+    return G
+            
 if __name__ == "__main__":
 
     ## read the graph1
-    voting_graph = read_rfa("../data/smaller.txt")
-
-    converted = nx.convert_node_labels_to_integers(voting_graph,first_label=0)        
-    #nx.write_edgelist(converted, "../data/el.txt")    
-    cycle = {'node_list': [u'person'], 'edge_list': [u'votes_for']}
-    tmp_path = "tmp.gml"
-    nx.write_gml(converted,tmp_path)
-
-    ## some random testing right there
-    example_graph = load_gml("tmp.gml"," ")
-    decomposed = hinmine_decompose(example_graph,heuristic="idf",cycle=cycle)
-    print(decomposed.__dict__.keys())
+    #voting_graph = read_rfa("../data/smaller.txt")
+    rx = read_bitcoin("../data/soc-sign-bitcoinotc.csv")
+    print(nx.info(rx))

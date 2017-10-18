@@ -22,7 +22,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=0,return_type="raw"):
         graph = stochastic_normalization(hin.decomposed['decomposition'])
     
     else:
-
+        import networkx as nx
         ## this works on a raw network.
         n = len(hin.graph)
         if hin.weighted != False:
@@ -31,6 +31,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=0,return_type="raw"):
             converted = nx.to_scipy_sparse_matrix(hin.graph)
             
         graph = stochastic_normalization(converted)
+
 
     ## initialize
     vectors = np.zeros((n, n))
