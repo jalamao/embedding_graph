@@ -22,7 +22,7 @@ import numpy as np
 ## does embedding work as it is?3
 
 #rx = read_bitcoin("../data/soc-sign-bitcoinotc.csv")
-rx = read_web("../data/web-BerkStan.txt")
+rx = read_web("../data/bst_reduced.txt")
 rx = load_hinmine_object(rx)
 rx.weighted = "weight" ## assign the weight tag
 embedding = hinmine_embedding(rx,use_decomposition=False,parallel=8)

@@ -81,6 +81,7 @@ class HeterogeneousInformationNetwork:
     def process_network(self, label_delimiter):
         basic_types = set([self.graph.node[x]['type'] for x in self.graph.node if 'labels' in self.graph.node[x]])
         if len(basic_types) != 1:
+            ## tukej naredi, da enostavno sejvne grafek, to je uporabno za embedding
             raise Exception('Unclear target type!')
 
         self.basic_type = basic_types.pop()
