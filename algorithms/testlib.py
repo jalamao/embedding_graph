@@ -46,6 +46,11 @@ def test_embedding_raw():
     simple_net = load_hinmine_object("../data/example_weighted.txt", targets=False) ## embed only
     embedding = hinmine_embedding(simple_net,use_decomposition=False, parallel=8,verbose=True)
 
+def test_embedding_prediction():
+    ## do embedding + prediction
+    pass
+
+
 if __name__ == "__main__":
 #    test_embedding_raw()
     test_DEC()
