@@ -238,7 +238,7 @@ class HeterogeneousInformationNetwork:
                     current_type = node_sequence[i]
                     new_points = []
                     for point in points:
-                        new_points += [x for x in self.graph.edge[point] if self.graph.node[x]['type'] == current_type]
+                        new_points += [x for x in self.graph[point] if self.graph.node[x]['type'] == current_type]
                     points = new_points
                     i += 1
                 if len(points) > 1:

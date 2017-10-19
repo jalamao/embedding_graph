@@ -8,9 +8,9 @@ from libHIN.label_propagation import *
 import networkx as nx
 import numpy as np
 
-def test_DEC():
 
-    ## load the network from a gml, decompose and predict labels.
+def decompose_imdb():
+
     example_net = load_hinmine_object("../data/imdb_gml.gml","---") ## add support for weight
     cycle = ['movie_____features_____person_____acts_in_____movie'] ## decomposition cycle
 
@@ -19,53 +19,71 @@ def test_DEC():
 
     ## embedding
     embedding = hinmine_embedding(decomposed, parallel=0)
-    print(embedding)
-    print("Finished test 1 - DEC")
 
-def test_classification():
+    
+    
+    return embedding
+
+
+
+def test_classification_imdb():
 
     ## CV classification
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.multiclass import OneVsRestClassifier
     from sklearn.model_selection import cross_val_score
     from sklearn.dummy import DummyClassifier
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import f1_score
+    from sklearn.metrics import accuracy_score
+    from sklearn.naive_bayes import GaussianNB
+    from sklearn.ensemble import AdaBoostClassifier
+    from sklearn.neural_network import MLPClassifier
+    import autosklearn.classification
+    from sklearn.svm import LinearSVC
+    from sklearn.neighbors import KNeighborsClassifier    
 
-    example_net = load_hinmine_object("../data/imdb_gml.gml","---") ## add support for weight
-    cycle = ['movie_____features_____person_____acts_in_____movie'] ## decomposition cycle
 
-    ## split and re-weight
-    decomposed = hinmine_decompose(example_net,heuristic="chi", cycle=cycle)
+    classifiers = {'rf' : RandomForestClassifier(n_estimators=100, random_state=1),
+                   'dummy' : DummyClassifier(strategy='most_frequent',random_state=13),
+                    'nb' : GaussianNB(),
+                   'ada' : AdaBoostClassifier(n_estimators=500),
+                   'SVC' : LinearSVC(random_state=0),
+                   'MLP' : MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(8, 5,3,2), random_state=13),
+                   'knn' : OneVsRestClassifier(KNeighborsClassifier(n_neighbors=10))}
+                   #'autoML' :autosklearn.classification.AutoSklearnClassifier(default=30)}
 
-    ## embedding
-    embedding = hinmine_embedding(decomposed, parallel=0)
+    ## result container
 
-    ## multi target example
-    forest = RandomForestClassifier(n_estimators=100, random_state=1)
-    dummy_clf = DummyClassifier(strategy='most_frequent',random_state=0)
-
-    mclass_cls = OneVsRestClassifier(forest)
-    mclass_cls_dummy = OneVsRestClassifier(dummy_clf)
+    embedding = decompose_imdb()
     
-    dims = embedding['targets'].shape
-    target = 4
-    scores = cross_val_score(mclass_cls, embedding['data'], embedding['targets'][:,target], cv=10)
-    scores_dummy = cross_val_score(mclass_cls_dummy, embedding['data'], embedding['targets'][:,target], cv=10)
-    print(np.mean(scores)," % accuracy.")
-    print(np.mean(scores_dummy)," % accuracy dummy.")
+    results = []
+    for k,v in classifiers.items():
+
+        v = OneVsRestClassifier(v)
+        scores = cross_val_score(v, embedding['data'], embedding['targets'], cv=5, scoring='f1_weighted',n_jobs=4)        
+        results.append((k,np.mean(scores)))
         
+    results= sorted(results, key=lambda tup: tup[1])
+    for x in results:
+        cls, score = x
+        print("Classifier: {} performed with score of {}".format(cls,score))
+
     print("Finished test 2 - classification")
 
 
 def test_automl():
 
     import autosklearn.classification
-    cls = autosklearn.classification.AutoSklearnClassifier()
-    mclass_cls = OneVsRestClassifier(cls)
+    from sklearn.multiclass import OneVsRestClassifier
+    from sklearn.model_selection import cross_val_score
 
-    ## fit, predict    
-    scores = cross_val_score(cls, embedding['data'], embedding['targets'], cv=5)
+    embedding = decompose_imdb()
+    clf = autosklearn.classification.AutoSklearnClassifier(per_run_time_limit=10)    
+    v = OneVsRestClassifier(clf)
+    scores = cross_val_score(v, embedding['data'], embedding['targets'], cv=5, scoring='f1_weighted',n_jobs=1)        
+    print("AutoML performance: {}", np.mean(scores))
 
-    
 def test_embedding_raw():
 
     ## test simple embedding
@@ -79,9 +97,8 @@ def test_embedding_prediction():
 
 if __name__ == "__main__":
 
-    # test_embedding_raw()
-    test_classification()
-    
+#    test_classification_imdb()
+    test_automl()
     # check list:
     # word2vec heuristic
     # decomposition + embed + predict on 2 datsets compare with old

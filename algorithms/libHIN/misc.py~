@@ -1,0 +1,26 @@
+## this file contains evaluation metrics, commonly used for multiclass classification
+
+def find_cv_converged_split(Dx,Dy,percentage):
+
+    incorrect_split = True
+    nrow, ncol = Dx.shape    
+    f1 = int(nrow*percentage)
+    
+    while incorrect_split:
+                
+        idx = np.random.randint(nrow, size=f1)
+        
+        inverse = np.ones(nrow, np.bool)
+        inverse[idx] = 0
+        
+        train_targets = Dy[idx]
+        test_targets = Dy[inverse]
+        
+        train_data = Dx[idx]
+        test_data = Dx[inverse]
+
+        completness = np.where(~train_targets.any(axis=0))[0]
+
+        if len(completness) == 0:
+            
+            yield (train_data,test_data,train_targets,test_targets)
