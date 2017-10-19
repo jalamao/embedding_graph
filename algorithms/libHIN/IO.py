@@ -1,16 +1,24 @@
 ## This  part of library reads various files
-from networkx import read_gml
 from .dataStructures import HeterogeneousInformationNetwork
 import numpy as np
 
-def load_hinmine_object(infile,label_delimiter=" "):
+def load_hinmine_object(infile,label_delimiter=" ",weight_tag = False, targets=True):
 
     if ".gml" in infile:
+        ## parse as gml object
+        from networkx import read_gml ## lazy
         net = read_gml(infile)
+        
+    elif ".txt" in infile:
+        ## parse as edgelist
+        weight_tag = "weight"
+        net = parse_edgelist(infile)
+        
     else:
+        ## parse as a previously constructed nx object
         net = infile
 
-    hin = HeterogeneousInformationNetwork(net, label_delimiter)
+    hin = HeterogeneousInformationNetwork(net, label_delimiter, weight_tag, target_tag = targets)
     train_indices = []
     test_indices = []
     for index, node in enumerate(hin.node_list):
@@ -19,9 +27,32 @@ def load_hinmine_object(infile,label_delimiter=" "):
         else:
             test_indices.append(index)
     hin.split_to_indices(train_indices=train_indices, test_indices=test_indices)
-    hin.create_label_matrix()
+
+    if targets:
+        hin.create_label_matrix()
+        
     return hin
 
+def parse_edgelist(infile):
+
+    # This is intended for simple file parsing, when only embeddings are considered.
+    # Check the examples on the node classificaiton to generate proper input for this type.
+    import networkx as nx ## lazy imports
+    
+    G = nx.MultiDiGraph()
+    with open(infile) as inf:
+        for line in inf:
+            parts = line.strip().split()
+
+            if len(parts) == 2:
+                ## unweighted network
+                G.add_edge(parts[0],parts[1],weight=1)
+                
+            if len(parts) == 3:
+                ## a simple weighted network
+                G.add_edge(parts[0],parts[1],weight=np.absolute(float(parts[2])))
+    return G
+            
 def generate_cv_folds(data,targets,percentage=0.7,nfold=10):
     
     nrow,ncol = data.shape ## get dataframe dimensions

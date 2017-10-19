@@ -5,7 +5,6 @@ import numpy as np
 import scipy.sparse as sp
 from .decomposition import get_calculation_method
 
-
 class Class:
     def __init__(self, lab_id, name, members):
         self.name = name
@@ -29,11 +28,11 @@ class Class:
 
 
 class HeterogeneousInformationNetwork:
-    def __init__(self, network, label_delimiter, weight_tag=False):
+    def __init__(self, network, label_delimiter, weight_tag=False, target_tag=True):
         self.label_list = []  # list of labels.
         self.labels_by_id = {}  # IDs of each label
         self.graph = network
-
+        self.target_tag = target_tag
         self.node_list = []  # List of all nodes in decomposition
         self.node_indices = {}  # Indices of all nodes in decomposition
         self.basic_type = None  # Basic node type (for decomposition)
@@ -79,35 +78,35 @@ class HeterogeneousInformationNetwork:
             self.graph.node[node]['labels'].append(new_class)
 
     def process_network(self, label_delimiter):
-        basic_types = set([self.graph.node[x]['type'] for x in self.graph.node if 'labels' in self.graph.node[x]])
-        if len(basic_types) != 1:
-            ## tukej naredi, da enostavno sejvne grafek, to je uporabno za embedding
-            raise Exception('Unclear target type!')
+        if self.target_tag:
+            basic_types = set([self.graph.node[x]['type'] for x in self.graph.node if 'labels' in self.graph.node[x]])
+            if len(basic_types) != 1:
+                ## tukej naredi, da enostavno sejvne grafek, to je uporabno za embedding
+                raise Exception('Unclear target type!')
 
-        self.basic_type = basic_types.pop()
-        self.node_list = [x for x in self.graph.node if self.graph.node[x]['type'] == self.basic_type]
-        try:
-            self.node_list.sort(key=lambda x: float(x))
-        except ValueError:
-            self.node_list.sort()
-        self.node_indices = dict([(item, index) for index, item in enumerate(self.node_list)])
-        for node_id in self.node_list:
-            if len(self.graph.node[node_id]['labels']) > 0:
-                labels = self.graph.node[node_id]['labels'].split(label_delimiter)
-                self.graph.node[node_id]['labels'] = []
-                for label in labels:
-                    self.add_label(node_id, label, label_name=label)
+            self.basic_type = basic_types.pop()
+            self.node_list = [x for x in self.graph.node if self.graph.node[x]['type'] == self.basic_type]
+            try:
+                self.node_list.sort(key=lambda x: float(x))
+            except ValueError:
+                self.node_list.sort()
+            self.node_indices = dict([(item, index) for index, item in enumerate(self.node_list)])
+            for node_id in self.node_list:
+                if len(self.graph.node[node_id]['labels']) > 0:
+                    labels = self.graph.node[node_id]['labels'].split(label_delimiter)
+                    self.graph.node[node_id]['labels'] = []
+                    for label in labels:
+                        self.add_label(node_id, label, label_name=label)
 
-        for lab in self.label_list:
-            if lab is not None:
-                temp_list = [mem for mem in lab.members if self.graph.node[mem]['type'] == self.basic_type]
-                lab.basic_members = set(temp_list)
-        self.label_array = - np.ones(
-            (max([len(self.graph.node[node]['labels']) for node in self.node_list]), len(self.node_list)))
-        for node in self.node_list:
-            tmp = self.graph.node[node]['labels']
-            self.label_array[:len(tmp), self.node_indices[node]] = [label.index for label in tmp]
-        self.create_label_matrix()
+            for lab in self.label_list:
+                if lab is not None:
+                    temp_list = [mem for mem in lab.members if self.graph.node[mem]['type'] == self.basic_type]
+                    lab.basic_members = set(temp_list)
+            self.label_array = - np.ones((max([len(self.graph.node[node]['labels']) for node in self.node_list]), len(self.node_list)))
+            for node in self.node_list:
+                tmp = self.graph.node[node]['labels']
+                self.label_array[:len(tmp), self.node_indices[node]] = [label.index for label in tmp]
+            self.create_label_matrix()
 
     def create_label_matrix(self, weights=None):
 
