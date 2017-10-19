@@ -54,6 +54,8 @@ def get_calculation_method(method_name):
         return calculate_importance_rf
     elif method_name == 'okapi':
         return calculate_importance_okapi
+    elif method_name == "w2w": ## TBA
+        return calculate_importance_w2w
     else:
         raise Exception('Unknown weighing method')
 
@@ -136,6 +138,8 @@ def np_calculate_importance_chi(predicted, label_matrix, actual_pos_nums):
     res = top / bot
     return res
 
+def calculate_importance_w2w(classes, universal_set, linked_nodes, n, **kwargs):
+    pass
 
 def calculate_importance_ig(classes, universal_set, linked_nodes, n, **kwargs):
     """
@@ -201,7 +205,7 @@ def calculate_importance_idf(classes, universal_set, linked_nodes, n, **kwargs):
     :param linked_nodes: Set of all nodes linked by the midpoint
     :param n: Number of elements of universal set
     :return: List of weights of the midpoint for each label in class
-    """
+    """    
     predicted_pos = universal_set.intersection(linked_nodes)
     predicted_pos_num = len(predicted_pos)
     idf = log(n * 1.0 / (1 + predicted_pos_num))

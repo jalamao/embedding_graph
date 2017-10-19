@@ -203,6 +203,7 @@ class HeterogeneousInformationNetwork:
         nn = len(self.node_list)
         matrix = sp.csr_matrix((nn, nn))
         n = len(universal_set)
+        
         importance_calculator = get_calculation_method(weighing)
         if generator is None:
             raise Exception('No midpoint generator!')
@@ -217,13 +218,16 @@ class HeterogeneousInformationNetwork:
             i += 1
             if i % 1000 == 0:
                 pass
+
+            ## to za vsak class poracun importance
             importances = importance_calculator(classes, universal_set, item, n, degrees=degrees, avgdegree=avgdegree)
             importance = np.sum(importances, axis=0)
             i1 = [self.node_indices[x] for x in item]
             i2 = [[x] for x in i1]
             to_add = sp.csr_matrix((nn, nn))
-            to_add[i2, i1] = importance            
-#            to_add = to_add.tocsr() tega ne rabmo ne?
+            to_add[i2, i1] = importance
+            
+            #to_add = to_add.tocsr() #tega ne rabmo ne?
             matrix += to_add
 
         ## hadamand product
