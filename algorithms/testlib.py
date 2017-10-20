@@ -19,9 +19,7 @@ def decompose_imdb():
 
     ## embedding
     embedding = hinmine_embedding(decomposed, parallel=0)
-
-    
-    
+        
     return embedding
 
 
@@ -77,12 +75,20 @@ def test_automl():
     import autosklearn.classification
     from sklearn.multiclass import OneVsRestClassifier
     from sklearn.model_selection import cross_val_score
-
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import f1_score
+    
     embedding = decompose_imdb()
     clf = autosklearn.classification.AutoSklearnClassifier(per_run_time_limit=10)    
     v = OneVsRestClassifier(clf)
-    scores = cross_val_score(v, embedding['data'], embedding['targets'], cv=5, scoring='f1_weighted',n_jobs=1)        
-    print("AutoML performance: {}", np.mean(scores))
+
+    X_train, X_test, y_train, y_test = train_test_split(embedding['data'], embedding['targets'], test_size=0.4, random_state=0)
+
+    scores = v.fit(X_train,y_train).predict(X_test)
+    score =  f1_score(scores,y_test,average="weighted")
+   
+#    scores = cross_val_score(v, embedding['data'], embedding['targets'], cv=3, scoring='f1_weighted',n_jobs=1)        
+    print("AutoML performance: {}", score)
 
 def test_embedding_raw():
 
