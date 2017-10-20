@@ -307,7 +307,14 @@ def chi_value(actual_pos_num, predicted_pos_num, tp, n):
 def hinmine_decompose(network, heuristic, cycle=None):
     if cycle is None:
         candidates = network.calculate_decomposition_candidates()
-        raise Exception('No decomposition cycle provided. Candidate cycles are: %s' % candidates)
+        cycle = []
+        for x in candidates:
+            edges = x['edge_list']
+            node = x['node_list']
+            spr = "_____"
+            cycle.append(node[0]+spr+edges[0]+spr+node[1]+spr+edges[1]+spr+node[2])
+                                
+        print('No decomposition cycle provided. Candidate cycles thus used are: %s' % cycle)
 
     try:
         cycles = cycle
