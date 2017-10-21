@@ -15,7 +15,6 @@ def decompose_test(fname, delim):
     ## split and re-weight
     print("Beginning decomposition..")
 
-    # cycle = ["purchase_____purchased_____B_level_item_____purchased_by_____purchase"]
     # c2 = ["movie_____features_____person_____acts_in_____movie"]
    
     decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None)

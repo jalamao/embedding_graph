@@ -225,14 +225,14 @@ class HeterogeneousInformationNetwork:
             i1 = [self.node_indices[x] for x in item]
             i2 = [[x] for x in i1]
             to_add = sp.csr_matrix((nn, nn))
-            to_add[i2, i1] = importance
-            
-            #to_add = to_add.tocsr() #tega ne rabmo ne?
+            to_add[i2, i1] = importance            
+            to_add = to_add.tocsr() # this prevents memory leaks
             matrix += to_add
 
         ## hadamand product
         ## probajmo z matrix = matrix.multiply(self.weight_matrix)
         ## tukej bi hipoteticno uposteval utezi nekje..
+        
         self.decomposed[name] = matrix
 
     def midpoint_generator(self, node_sequence, edge_sequence):

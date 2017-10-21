@@ -43,8 +43,13 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=0,return_type="raw",v
         graph = stochastic_normalization(converted)
 
 
+
     ## initialize
-    vectors = np.zeros((n, n))
+
+    if n > 50000:
+        vectors = sp.lil_matrix((nn, nn))
+    else:
+        vectors = np.zeros((n, n))
 
     if parallel > 0:
         if verbose:

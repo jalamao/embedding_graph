@@ -323,7 +323,6 @@ def hinmine_decompose(network, heuristic, cycle=None):
     hin = network
     for cycle in cycles:
         cycle = cycle.split('_____')
-        print(cycle)
         node_sequence = []
         edge_sequence = []
         for i in range(len(cycle)):
