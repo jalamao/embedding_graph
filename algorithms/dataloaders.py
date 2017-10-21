@@ -114,18 +114,19 @@ def read_ecommerce(data,labels):
         for item in data1['items']['A']:
             G.add_node(item,type='A_level_item')
             G.add_edge(n1,item,type='purchased_by')
-
+            G.add_edge(item,n1,type='purchased')
         for item in data1['items']['B']:
             G.add_node(item,type='B_level_item')
             G.add_edge(n1,item,type='purchased_by')
-
+            G.add_edge(item,n1,type='purchased')
         for item in data1['items']['C']:
             G.add_node(item,type='C_level_item')
             G.add_edge(n1,item,type='purchased_by')
-
+            G.add_edge(item,n1,type='purchased')
         for item in data1['items']['D']:
             G.add_node(item,type='D_level_item')
             G.add_edge(n1,item,type='purchased_by')
+            G.add_edge(item,n1,type='purchased')
 
     return G
     

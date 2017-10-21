@@ -11,10 +11,13 @@ import numpy as np
 def decompose_test(fname, delim):
 
     example_net = load_hinmine_object(fname,delim) ## add support for weight
-    print(example_net.label_list)
+    
     ## split and re-weight
     print("Beginning decomposition..")
-    cycle = "purchase_____purchased_by_____B_level_item_____purchased_____purchase"
+
+    # cycle = ["purchase_____purchased_____B_level_item_____purchased_by_____purchase"]
+    # c2 = ["movie_____features_____person_____acts_in_____movie"]
+   
     decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None)
     
     ## embedding
@@ -28,7 +31,7 @@ def test_classification_imdb():
 
     ## CV classification
     from sklearn.ensemble import RandomForestClassifier
-    from sklearn.multiclass import OneVsRestClassifier
+    from sklearn.multiclass import OneVsRestClassifie
     from sklearn.model_selection import cross_val_score
     from sklearn.dummy import DummyClassifier
     from sklearn.model_selection import train_test_split
