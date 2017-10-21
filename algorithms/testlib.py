@@ -13,10 +13,14 @@ def decompose_test(fname, delim):
     example_net = load_hinmine_object(fname,delim) ## add support for weight
 
     ## split and re-weight
-    decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None)
+    print("Beginning decomposition..")
+    cycle = "purchase_____purchased_by_B_____B_level_item_____purchased_B_____purchase"
+    decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=cycle)
 
     ## embedding
+    print("Starting embedding..")
     embedding = hinmine_embedding(decomposed, parallel=0)
+    print(embedding)
         
     return embedding
 
@@ -35,7 +39,7 @@ def test_classification_imdb():
     from sklearn.neural_network import MLPClassifier
     import autosklearn.classification
     from sklearn.svm import LinearSVC
-    from sklearn.neighbors import KNeighborsClassifier    
+    from sklearn.neighbors import KNeighborsClassifier
 
 
     classifiers = {'rf' : RandomForestClassifier(n_estimators=100, random_state=1),
