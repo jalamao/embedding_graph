@@ -11,12 +11,12 @@ import numpy as np
 def decompose_test(fname, delim):
 
     example_net = load_hinmine_object(fname,delim) ## add support for weight
-
+    print(example_net.label_list)
     ## split and re-weight
     print("Beginning decomposition..")
-    cycle = "purchase_____purchased_by_B_____B_level_item_____purchased_B_____purchase"
-    decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=cycle)
-
+    cycle = "purchase_____purchased_by_____B_level_item_____purchased_____purchase"
+    decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None)
+    
     ## embedding
     print("Starting embedding..")
     embedding = hinmine_embedding(decomposed, parallel=0)
@@ -97,6 +97,26 @@ def test_automl():
 
     print("Finished test 2 - classification")
 
+def test_rnn():
+    
+    embedding = decompose_test("../data/imdb_gml.gml","---")
+    
+    # clf = Sequential()
+    # clf.add(Dropout(0.3))
+    # clf.add(Dense(xt.shape[1], 1600, activation='relu'))
+    # clf.add(Dropout(0.6))
+    # clf.add(Dense(1600, 1200, activation='relu'))
+    # clf.add(Dropout(0.6))
+    # clf.add(Dense(1200, 800, activation='relu'))
+    # clf.add(Dropout(0.6))
+    # clf.add(Dense(800, yt.shape[1], activation='sigmoid'))
+    # clf.compile(optimizer=Adam(), loss='binary_crossentropy')    
+    # clf.fit(embedding['data'], embedding['targets'], batch_size=120, nb_epoch=300,verbose=1)
+    # preds = clf.predict(xs)
+    # preds[preds>=0.5] = 1
+    # preds[preds<0.5] = 0
+    # print f1_score(ys, preds, average='macro')    
+    
 def test_embedding_raw():
 
     ## test simple embedding

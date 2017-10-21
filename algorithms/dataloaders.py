@@ -109,25 +109,24 @@ def read_ecommerce(data,labels):
     ## obravnavaj kot bipartitnigraf brez autociklov, pa bo.
             
     G = nx.MultiDiGraph()
-    for n1,data1 in nodes.items():        
+    for n1,data1 in nodes.items():
         G.add_node(n1,type='purchase',labels=data1['gender'], name=str(n1))
         for item in data1['items']['A']:
             G.add_node(item,type='A_level_item')
             G.add_edge(n1,item,type='purchased_by')
-            G.add_edge(item,n1,type='purchased')
+
         for item in data1['items']['B']:
             G.add_node(item,type='B_level_item')
             G.add_edge(n1,item,type='purchased_by')
-            G.add_edge(item,n1,type='purchased')
+
         for item in data1['items']['C']:
             G.add_node(item,type='C_level_item')
             G.add_edge(n1,item,type='purchased_by')
-            G.add_edge(item,n1,type='purchased')
+
         for item in data1['items']['D']:
             G.add_node(item,type='D_level_item')
             G.add_edge(n1,item,type='purchased_by')
-            G.add_edge(item,n1,type='purchased')
-    
+
     return G
     
 if __name__ == "__main__":
