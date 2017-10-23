@@ -100,29 +100,35 @@ def test_automl():
     print("Finished test 2 - classification")
 
 def test_rnn():
-    
-    embedding = decompose_test("../data/imdb_gml.gml","---")
 
-    ## generate cv folds
-    ## train on each fold
-    ## get weighted accuracy
-    ## compute mean of this.
-    
-    # clf = Sequential()
-    # clf.add(Dropout(0.3))
-    # clf.add(Dense(xt.shape[1], 1600, activation='relu'))
-    # clf.add(Dropout(0.6))
-    # clf.add(Dense(1600, 1200, activation='relu'))
-    # clf.add(Dropout(0.6))
-    # clf.add(Dense(1200, 800, activation='relu'))
-    # clf.add(Dropout(0.6))
-    # clf.add(Dense(800, yt.shape[1], activation='sigmoid'))
-    # clf.compile(optimizer=Adam(), loss='binary_crossentropy')    
-    # clf.fit(embedding['data'], embedding['targets'], batch_size=120, nb_epoch=300,verbose=1)
-    # preds = clf.predict(xs)
-    # preds[preds>=0.5] = 1
-    # preds[preds<0.5] = 0
-    # print f1_score(ys, preds, average='macro')    
+    from sklearn.model_selection import StratifiedKFold
+    from keras.models import Sequential
+    from keras.layers import Dense
+    from sklearn.model_selection import KFold
+    embedding = decompose_test("../data/imdb_gml.gml","---")
+    cvscores = []
+
+    X = embedding['data']
+    Y = embedding['targets']
+    print(X.shape,Y.shape)
+    kf = KFold(n_splits=5, random_state=None, shuffle=False)
+    for train, test in kf.split(X):
+        # create model
+        model = Sequential()
+        model.add(Dense(X.shape[1], input_dim=300, activation='relu'))
+        model.add(Dense(100, activation='relu'))
+        model.add(Dense(Y.shape[1], activation='sigmoid'))
+        # Compile model
+        model.compile(loss='binary_crossentropy', optimizer='adam')
+        # Fit the model
+        model.fit(X[train], Y[train], epochs=150, batch_size=50, verbose=1)
+        # evaluate the model
+        preds = model.predict(X[test])
+        preds[preds>=0.5] = 1
+        preds[preds<0.5] =  0
+        cvscores.append(f1_score(Y[test], preds, average='weighted'))
+        
+    print("Mean F1: {} and std: {}".format(np.mean(cvscores),np.std(cvscores)))
     
 def test_embedding_raw():
 
@@ -147,11 +153,15 @@ def test_label_propagation():
 if __name__ == "__main__":
 
     import argparse
+
     parser = argparse.ArgumentParser()
+
     parser.add_argument("--test_classification_imdb")
     parser.add_argument("--test_automl")
     parser.add_argument("--decompose_test")
     parser.add_argument("--test_label_prop")
+    parser.add_argument("--test_rnn")
+    
     args = parser.parse_args()
 
     if args.test_label_prop:
@@ -165,8 +175,5 @@ if __name__ == "__main__":
 
     if args.test_automl:
         test_automl()
-
-        ## workflow idea
-        ## first, check at least autoML part + label properties
-        ## port PR to GPU
-        ## check the performance
+    if args.test_rnn:
+        test_rnn()
