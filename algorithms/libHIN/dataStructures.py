@@ -214,6 +214,7 @@ class HeterogeneousInformationNetwork:
         if degrees is not None:
             avgdegree = sum(degrees.values()) * 1.0 / len(degrees)
         i=0
+        tmp_container = {}
         for item in generator:
             i += 1
             if i % 1000 == 0:
@@ -228,6 +229,7 @@ class HeterogeneousInformationNetwork:
             to_add[i2, i1] = importance            
             to_add = to_add.tocsr() # this prevents memory leaks
             matrix += to_add
+
 
         ## hadamand product
         ## probajmo z matrix = matrix.multiply(self.weight_matrix)

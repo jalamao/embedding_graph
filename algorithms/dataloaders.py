@@ -132,8 +132,8 @@ def read_ecommerce(data,labels):
     
 if __name__ == "__main__":
 
-    graph = read_ecommerce("../data/ecommerce/dataset.txt","../data/ecommerce/labels.txt")
-    nx.write_gml(graph, "../data/ecommerce.gml")
+    graph = read_ecommerce("../data/ecommerce_15k.txt","../data/ecommerce_15k_labels.txt")
+    nx.write_gml(graph, "../data/ecommerce_15k.gml")
     ## read the graph1
     #voting_graph = read_rfa("../data/smaller.txt")
     #rx = read_bitcoin("../data/soc-sign-bitcoinotc.csv")
