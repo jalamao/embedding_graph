@@ -136,7 +136,7 @@ def test_label_propagation():
     print("Beginning decomposition..")   
     decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None)
     print("Beginning label propagation..")
-    pmat = run_label_propagation(decomposed)
+    pmat = run_label_propagation(decomposed,weights="balanced")
     print(pmat)
 
 if __name__ == "__main__":
@@ -160,3 +160,8 @@ if __name__ == "__main__":
 
     if args.test_automl:
         test_automl()
+
+        ## workflow idea
+        ## first, check at least autoML part + label properties
+        ## port PR to GPU
+        ## check the performance
