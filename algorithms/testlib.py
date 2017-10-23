@@ -80,7 +80,7 @@ def test_automl():
     from sklearn.model_selection import train_test_split
     from sklearn.metrics import f1_score
     
-    classifiers = {'autoML' :autosklearn.classification.AutoSklearnClassifier(per_run_time_limit=15)}
+    classifiers = {'autoML' :autosklearn.classification.AutoSklearnClassifier(per_run_time_limit=15, time_left_for_this_task=1200)}
 
     ## result container
     embedding = decompose_test("../data/imdb_gml.gml","---")
