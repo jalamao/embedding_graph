@@ -16,6 +16,8 @@ def label_propagation_normalization(matrix):
     dm = sp.diags(d, 0).tocsc()
     return dm.dot(matrix).dot(dm)
 
+
+## dodaj numba compiler tule
 def label_propagation(graph_matrix, class_matrix, alpha, epsilon=1e-12, max_steps=10000):
     # This method assumes the label-propagation normalization and a symmetric matrix with no rank sinks.
     steps = 0
@@ -28,9 +30,12 @@ def label_propagation(graph_matrix, class_matrix, alpha, epsilon=1e-12, max_step
         current_labels = new_labels
     return current_labels
 
+
+## tu mu dodaj set index-ov, ki jih ima za train/test
 def run_label_propagation(hin, weights=None, alpha=0.85, semibalanced=None):
     assert isinstance(hin, HeterogeneousInformationNetwork)
     matrix = label_propagation_normalization(hin.decomposed['decomposition'])
-    hin.create_label_matrix(weights=weights)
+    hin.create_label_matrix(weights=weights)    
+#    hin.label_matrix[0:50] = 0
     propagated_matrix = label_propagation(matrix, hin.label_matrix, alpha)
-    return propagated_matrix[hin.test_indices]
+    return propagated_matrix

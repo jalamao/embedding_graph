@@ -42,8 +42,6 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=0,return_type="raw",v
             emit_state("Normalizing the adj matrix..")
         graph = stochastic_normalization(converted)
 
-
-
     ## initialize
 
     if n > 50000:

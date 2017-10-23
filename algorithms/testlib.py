@@ -129,17 +129,29 @@ def test_embedding_prediction():
     ## do embedding + prediction
     pass
 
+def test_label_propagation():
+
+    example_net = load_hinmine_object("../data/imdb_gml.gml","---") ## add support for weight
+    ## split and re-weight
+    print("Beginning decomposition..")   
+    decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None)
+    print("Beginning label propagation..")
+    pmat = run_label_propagation(decomposed)
+    print(pmat)
 
 if __name__ == "__main__":
-
 
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--test_classification_imdb")
     parser.add_argument("--test_automl")
     parser.add_argument("--decompose_test")
+    parser.add_argument("--test_label_prop")
     args = parser.parse_args()
 
+    if args.test_label_prop:
+        test_label_propagation()
+            
     if args.decompose_test:
         decompose_test(args.decompose_test," ")
         
