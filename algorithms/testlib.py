@@ -102,6 +102,11 @@ def test_automl():
 def test_rnn():
     
     embedding = decompose_test("../data/imdb_gml.gml","---")
+
+    ## generate cv folds
+    ## train on each fold
+    ## get weighted accuracy
+    ## compute mean of this.
     
     # clf = Sequential()
     # clf.add(Dropout(0.3))
