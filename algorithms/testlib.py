@@ -21,7 +21,7 @@ def decompose_test(fname, delim):
     
     ## embedding
     print("Starting embedding..")
-    embedding = hinmine_embedding(decomposed, parallel=0)
+    embedding = hinmine_embedding(decomposed, parallel=-1)
     print(embedding)
         
     return embedding

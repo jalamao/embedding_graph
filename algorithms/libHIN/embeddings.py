@@ -58,7 +58,16 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=0,return_type="raw",v
         for pr_vector in results:
             if pr_vector != None:
                 vectors[pr_vector[0],:] = pr_vector[1]
-    
+                
+    elif parallel == -1:
+        if verbose:
+            emit_state("Parallel embedding in progress..")
+        import multiprocessing as mp
+        p = mp.Pool(processes=mp.cpu_count())
+        results = p.map(pr_kernel,range(n))
+        for pr_vector in results:
+            if pr_vector != None:
+                vectors[pr_vector[0],:] = pr_vector[1]    
     else:
         if verbose:
             emit_state("Non-Parallel embedding in progress..")
@@ -68,6 +77,8 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=0,return_type="raw",v
             if norm > 0:
                 pr = pr / np.linalg.norm(pr, 2)
                 vectors[index, :] = pr
+
+                
 
     if verbose:
         emit_state("Finished with embedding..")
