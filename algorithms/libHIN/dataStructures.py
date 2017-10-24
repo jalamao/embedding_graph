@@ -121,18 +121,18 @@ class HeterogeneousInformationNetwork:
     def calculate_schema(self):
         schema = nx.MultiDiGraph()
         for node_start in self.graph.node:
-            for node_end in self.graph.edge[node_start]:
-                for key in self.graph.edge[node_start][node_end]:
+            for node_end in self.graph[node_start]:
+                for key in self.graph[node_start][node_end]:
                     start_type = self.graph.node[node_start]['type']
                     end_type = self.graph.node[node_end]['type']
-                    edge_type = self.graph.edge[node_start][node_end][key]['type']
+                    edge_type = self.graph[node_start][node_end][key]['type']
                     has_type = False
                     if schema.has_edge(start_type, end_type):
-                        for key in schema.edge[start_type][end_type]:
-                            if schema.edge[start_type][end_type][key]['type'] == edge_type:
+                        for key in schema[start_type][end_type]:
+                            if schema[start_type][end_type][key]['type'] == edge_type:
                                 has_type = True
                                 break
-                        # if schema.edge[start_type][end_type]['type'] != edge_type:
+                        # if schema[start_type][end_type]['type'] != edge_type:
                         #     raise Exception('Multiple edge types between equal node types are not supported!')
                     if not has_type:
                         schema.add_edge(start_type, end_type, type=edge_type)
@@ -147,15 +147,15 @@ class HeterogeneousInformationNetwork:
             for list_so_far in under_construction:
                 if list_so_far['node_list'][-1] != self.basic_type or len(list_so_far['node_list']) == 1:
                     current = list_so_far['node_list'][-1]
-                    for neighbor in schema.edge[current]:
+                    for neighbor in schema[current]:
                         if neighbor == self.basic_type:
                             append_to = candidate_lists
                         else:
                             append_to = next_gens
-                        for key in schema.edge[current][neighbor]:
+                        for key in schema[current][neighbor]:
                             append_to.append({
                                 'node_list': list_so_far['node_list'] + [neighbor],
-                                'edge_list': list_so_far['edge_list'] + [schema.edge[current][neighbor][key]['type']]
+                                'edge_list': list_so_far['edge_list'] + [schema[current][neighbor][key]['type']]
                             })
             under_construction = next_gens
         return candidate_lists
