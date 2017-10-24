@@ -50,6 +50,10 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
         vectors = np.zeros((n, n))
 
     if parallel:
+
+        import mkl
+        mkl.set_num_threads(1)
+        
         if verbose:
             emit_state("Parallel embedding in progress..")
         import multiprocessing as mp
