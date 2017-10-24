@@ -304,7 +304,7 @@ def chi_value(actual_pos_num, predicted_pos_num, tp, n):
     else:
         raise Exception("Error in chi implementation.")
 
-def hinmine_decompose(network, heuristic, cycle=None):
+def hinmine_decompose(network, heuristic, cycle=None,parallel=True):
     if cycle is None:
         candidates = network.calculate_decomposition_candidates()
         cycle = []
@@ -339,6 +339,7 @@ def hinmine_decompose(network, heuristic, cycle=None):
                                     heuristic,
                                     None,
                                     hin.midpoint_generator(node_sequence, edge_sequence),
-                                    degrees=degrees)
+                                    degrees=degrees,
+                                    parallel=parallel)
 
     return hin

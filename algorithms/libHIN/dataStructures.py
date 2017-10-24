@@ -190,7 +190,7 @@ class HeterogeneousInformationNetwork:
         for label in self.label_list:
             label.not_test_members_num = len(label.not_test_members)
 
-    def decompose_from_iterator(self, name, weighing, summing, generator=None, degrees=None):
+    def decompose_from_iterator(self, name, weighing, summing ,generator=None, degrees=None, parallel=True):
         classes = [lab for lab in self.label_list if lab and len(lab.not_test_members) > 0]
         universal_set = list(set(self.train_ids).union(self.validate_ids))
         universal_inv = {}
@@ -214,21 +214,48 @@ class HeterogeneousInformationNetwork:
         if degrees is not None:
             avgdegree = sum(degrees.values()) * 1.0 / len(degrees)
         i=0
-        tmp_container = {}
-        for item in generator:
-            i += 1
-            if i % 1000 == 0:
-                pass
+        tmp_container = []
+        bsize = 5
 
-            ## to za vsak class poracun importance
-            importances = importance_calculator(classes, universal_set, item, n, degrees=degrees, avgdegree=avgdegree)
-            importance = np.sum(importances, axis=0)
-            i1 = [self.node_indices[x] for x in item]
-            i2 = [[x] for x in i1]
-            to_add = sp.csr_matrix((nn, nn))
-            to_add[i2, i1] = importance            
-            to_add = to_add.tocsr() # this prevents memory leaks
-            matrix += to_add
+        if parallel:
+            ## parallel for edge type
+            import multiprocessing as mp
+            p = mp.Pool(processes=mp.cpu_count())
+        
+            for item in generator:                
+                i += 1
+                tmp_container.append(item)
+                if i % bsize == 0:                
+                    pinput = []
+                    for j in tmp_container:
+                        pinput.append((classes,universal_set,j,n))
+                    results = p.starmap(importance_calculator,pinput)
+
+                    ## construct main matrix
+                    for item,importances in zip(tmp_container,results):
+                        importance = np.sum(importances, axis=0)
+                        i1 = [self.node_indices[x] for x in item]
+                        i2 = [[x] for x in i1]
+                        to_add = sp.csr_matrix((nn, nn))
+                        to_add[i2, i1] = importance            
+                        to_add = to_add.tocsr() # this prevents memory leaks
+                        matrix += to_add
+
+                    ## reset batch
+                    tmp_container = []
+        else:
+            ## non-parallel
+            for item in generator:
+            
+                ## to za vsak class poracun importance
+                importances = importance_calculator(classes, universal_set, item, n, degrees=degrees, avgdegree=avgdegree)
+                importance = np.sum(importances, axis=0)
+                i1 = [self.node_indices[x] for x in item]
+                i2 = [[x] for x in i1]
+                to_add = sp.csr_matrix((nn, nn))
+                to_add[i2, i1] = importance
+                to_add = to_add.tocsr() # this prevents memory leaks
+                matrix += to_add
 
 
         ## hadamand product

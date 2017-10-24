@@ -17,11 +17,11 @@ def decompose_test(fname, delim):
 
     # c2 = ["movie_____features_____person_____acts_in_____movie"]
    
-    decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None)
+    decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None, parallel=True)
     
     ## embedding
     print("Starting embedding..")
-    embedding = hinmine_embedding(decomposed, parallel=-1)
+    embedding = hinmine_embedding(decomposed, parallel=True)
     print(embedding)
         
     return embedding
