@@ -190,7 +190,7 @@ class HeterogeneousInformationNetwork:
         for label in self.label_list:
             label.not_test_members_num = len(label.not_test_members)
 
-    def decompose_from_iterator(self, name, weighing, summing ,generator=None, degrees=None, parallel=True):
+    def decompose_from_iterator(self, name, weighing, summing ,generator=None, degrees=None, parallel=True,pool=None):
         classes = [lab for lab in self.label_list if lab and len(lab.not_test_members) > 0]
         universal_set = list(set(self.train_ids).union(self.validate_ids))
         universal_inv = {}
@@ -219,15 +219,13 @@ class HeterogeneousInformationNetwork:
         
         if parallel:
             ## parallel for edge type
-            import multiprocessing as mp
-            p = mp.Pool(processes=mp.cpu_count())
-
+            print("entering while loop..")
             while True:
                 tmp_container = list(next(generator) for _ in range(bsize))
                 pinput = []
                 for j in tmp_container:
                     pinput.append((classes,universal_set,j,n))
-                results = p.starmap(importance_calculator,pinput)
+                results = pool.starmap(importance_calculator,pinput)
                 
                 ## construct main matrix
                 for item, importances in zip(tmp_container,results):
@@ -241,6 +239,7 @@ class HeterogeneousInformationNetwork:
 
                 ## add break condition
                 if  len(tmp_container) < 1:
+                    print("While break..")
                     break
 
         else:
@@ -262,7 +261,7 @@ class HeterogeneousInformationNetwork:
         ## hadamand product
         ## probajmo z matrix = matrix.multiply(self.weight_matrix)
         ## tukej bi hipoteticno uposteval utezi nekje..
-        
+        print("starting to write..")
         self.decomposed[name] = matrix
 
     def midpoint_generator(self, node_sequence, edge_sequence):

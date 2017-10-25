@@ -321,6 +321,13 @@ def hinmine_decompose(network, heuristic, cycle=None,parallel=True):
     except KeyError:
         raise Exception('No decomposition cycle selected')
     hin = network
+
+    if parallel:
+        import multiprocessing as mp
+        p = mp.Pool(processes=mp.cpu_count())
+    else:
+        p = None
+
     for cycle in cycles:
         cycle = cycle.split('_____')
         node_sequence = []
@@ -340,6 +347,6 @@ def hinmine_decompose(network, heuristic, cycle=None,parallel=True):
                                     None,
                                     hin.midpoint_generator(node_sequence, edge_sequence),
                                     degrees=degrees,
-                                    parallel=parallel)
+                                    parallel=parallel,pool=p)
 
     return hin
