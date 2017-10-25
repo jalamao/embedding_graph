@@ -30,7 +30,7 @@ def test_classification_imdb():
 
     ## CV classification
     from sklearn.ensemble import RandomForestClassifier
-    from sklearn.multiclass import OneVsRestClassifie
+    from sklearn.multiclass import OneVsRestClassifier
     from sklearn.model_selection import cross_val_score
     from sklearn.dummy import DummyClassifier
     from sklearn.model_selection import train_test_split
