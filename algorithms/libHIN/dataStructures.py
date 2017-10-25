@@ -240,12 +240,12 @@ class HeterogeneousInformationNetwork:
                     to_add = to_add.tocsr() # this prevents memory leaks
                     matrix += to_add
 
-                ## reset the container
-                tmp_container = []
 
                 ## add break condition
                 if  len(tmp_container) < 1:
                     break
+
+                tmp_container = []
 
         else:
             
