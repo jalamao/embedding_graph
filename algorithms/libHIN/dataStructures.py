@@ -259,10 +259,10 @@ class HeterogeneousInformationNetwork:
         ## hadamand product
         ## probajmo z matrix = matrix.multiply(self.weight_matrix)
         ## tukej bi hipoteticno uposteval utezi nekje..
-        if name not in self.decomposed.keys():
-            self.decomposed[name] = sp.csr_matrix((nn, nn))
-        
-        self.decomposed[name] += matrix
+#        if name not in self.decomposed.keys():
+#            self.decomposed[name] = sp.csr_matrix((nn, nn))
+
+        self.decomposed[name] = matrix
 
     def midpoint_generator(self, node_sequence, edge_sequence):
         if len(node_sequence) % 2 == 0:
