@@ -190,6 +190,10 @@ class HeterogeneousInformationNetwork:
         for label in self.label_list:
             label.not_test_members_num = len(label.not_test_members)
 
+    def split_to_parts(self,lst,n):
+        return [lst[i::n] for i in range(n)]
+    
+
     def decompose_from_iterator(self, name, weighing, summing ,generator=None, degrees=None, parallel=True,pool=None):
         classes = [lab for lab in self.label_list if lab and len(lab.not_test_members) > 0]
         universal_set = list(set(self.train_ids).union(self.validate_ids))
@@ -215,7 +219,7 @@ class HeterogeneousInformationNetwork:
             avgdegree = sum(degrees.values()) * 1.0 / len(degrees)
         i=0
         tmp_container = []
-        bsize = 40
+        bsize = 5
         
         if parallel:
             ## parallel for edge type
@@ -259,8 +263,22 @@ class HeterogeneousInformationNetwork:
                     importance = np.sum(importances, axis=0)
                     i1 = [self.node_indices[x] for x in item]
                     i2 = [[x] for x in i1]
+
                     to_add = sp.csr_matrix((nn, nn))
-                    to_add[i2, i1] = importance
+                    
+                    if len(i1) > 1000:
+
+                        ## split to prevent memory leaks when doing hadamand products
+                        parts_first = self.split_to_parts(i1,4)
+                        parts_second = self.split_to_parts(i2,4)
+                        
+                        for x in range(len(parts_first)):
+                            to_add[parts_first[x], parts_second[x]] = importance
+                            
+                    else:
+                        to_add[i2, i1] = importance
+
+                        
                     to_add = to_add.tocsr()
                     matrix += to_add
 
@@ -274,6 +292,9 @@ class HeterogeneousInformationNetwork:
                 importance = np.sum(importances, axis=0)
                 i1 = [self.node_indices[x] for x in item]
                 i2 = [[x] for x in i1]
+
+                
+                
                 to_add = sp.csr_matrix((nn, nn))
                 to_add[i2, i1] = importance
                 to_add = to_add.tocsr() # this prevents memory leaks
