@@ -59,7 +59,7 @@ def test_classification(graph,delimiter):
     for k,v in classifiers.items():
 
         v = OneVsRestClassifier(v)
-        scores = cross_val_score(v, embedding['data'], embedding['targets'], cv=5, scoring='f1_weighted',n_jobs=16)        
+        scores = cross_val_score(v, embedding['data'], embedding['targets'], cv=5, scoring='f1_weighted',n_jobs=4)        
         results.append((k,np.mean(scores)))
         
     results= sorted(results, key=lambda tup: tup[1])
