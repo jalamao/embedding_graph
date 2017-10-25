@@ -39,7 +39,6 @@ def test_classification_imdb():
     from sklearn.naive_bayes import GaussianNB
     from sklearn.ensemble import AdaBoostClassifier
     from sklearn.neural_network import MLPClassifier
-    import autosklearn.classification
     from sklearn.svm import LinearSVC
     from sklearn.neighbors import KNeighborsClassifier
 
@@ -50,8 +49,7 @@ def test_classification_imdb():
                    'ada' : AdaBoostClassifier(n_estimators=500),
                    'SVC' : LinearSVC(random_state=0),
                    'MLP' : MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(8, 5,3,2), random_state=13),
-                   'knn' : OneVsRestClassifier(KNeighborsClassifier(n_neighbors=10)),
-                   'autoML' :autosklearn.classification.AutoSklearnClassifier(per_run_time_limit=15)}
+                   'knn' : OneVsRestClassifier(KNeighborsClassifier(n_neighbors=10))}
 
     ## result container
 
