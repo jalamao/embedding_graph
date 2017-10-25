@@ -315,7 +315,7 @@ def hinmine_decompose(network, heuristic, cycle=None,parallel=True):
             cycle.append(node[0]+spr+edges[0]+spr+node[1]+spr+edges[1]+spr+node[2])
                                 
         print('No decomposition cycle provided. Candidate cycles thus used are: %s' % cycle)
-        cycle = cycle[0:2]
+ #       cycle = cycle[0:2]
     try:
         cycles = cycle
     except KeyError:
