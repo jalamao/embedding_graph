@@ -215,7 +215,7 @@ class HeterogeneousInformationNetwork:
             avgdegree = sum(degrees.values()) * 1.0 / len(degrees)
         i=0
         tmp_container = []
-        bsize = 300
+        bsize = 100
         
         if parallel:
             ## parallel for edge type
