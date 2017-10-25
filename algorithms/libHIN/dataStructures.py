@@ -215,20 +215,19 @@ class HeterogeneousInformationNetwork:
             avgdegree = sum(degrees.values()) * 1.0 / len(degrees)
         i=0
         tmp_container = []
-        bsize = 100
+        bsize = 400
         
         if parallel:
             ## parallel for edge type
-            print("entering while loop..")
             while True:
-                tmp_container = list(next(generator) for _ in range(bsize))
+                tmp_container = list(next(generator) for _ in range(bsize))                
                 pinput = []
                 for j in tmp_container:
                     pinput.append((classes,universal_set,j,n))
                 results = pool.starmap(importance_calculator,pinput)
                 
                 ## construct main matrix
-                for item, importances in zip(tmp_container,results):
+                for item, importances in zip(tmp_container, results):
                     importance = np.sum(importances, axis=0)
                     i1 = [self.node_indices[x] for x in item]
                     i2 = [[x] for x in i1]
@@ -239,7 +238,6 @@ class HeterogeneousInformationNetwork:
 
                 ## add break condition
                 if  len(tmp_container) < 1:
-                    print("While break..")
                     break
 
         else:
@@ -261,8 +259,10 @@ class HeterogeneousInformationNetwork:
         ## hadamand product
         ## probajmo z matrix = matrix.multiply(self.weight_matrix)
         ## tukej bi hipoteticno uposteval utezi nekje..
-        print("starting to write..")
-        self.decomposed[name] = matrix
+        if name not in self.decomposed.keys():
+            self.decomposed[name] = sp.csr_matrix((nn, nn))
+        
+        self.decomposed[name] += matrix
 
     def midpoint_generator(self, node_sequence, edge_sequence):
         if len(node_sequence) % 2 == 0:

@@ -3,6 +3,7 @@ from .dataStructures import HeterogeneousInformationNetwork
 from .core import stochastic_normalization, page_rank
 from .infolog import emit_state
 import numpy as np
+import scipy.sparse as sp
 
 def pr_kernel(index_row):
     pr = page_rank(graph, [index_row], try_shrink=True)
@@ -44,8 +45,8 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
 
     ## initialize
 
-    if n > 50000:
-        vectors = sp.lil_matrix((nn, nn))
+    if n > 5000:
+        vectors = sp.lil_matrix((n, n))
     else:
         vectors = np.zeros((n, n))
 

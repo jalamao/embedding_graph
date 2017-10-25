@@ -178,5 +178,6 @@ if __name__ == "__main__":
 
     if args.test_automl:
         test_automl(args.graph,args.delimiter)
+        
     if args.test_rnn:
         test_rnn(args.graph,args.delimiter)
