@@ -215,30 +215,35 @@ class HeterogeneousInformationNetwork:
             avgdegree = sum(degrees.values()) * 1.0 / len(degrees)
         i=0
         tmp_container = []
-        bsize = 100
+        bsize = 1000
         
         if parallel:
+
             ## parallel for edge type
             import multiprocessing as mp
             p = mp.Pool(processes=mp.cpu_count())
 
             while True:
-                tmp_container = list(next(generator) for _ in range(bsize))    
+                tmp_container = list(next(generator) for _ in range(bsize))
                 pinput = []
                 for j in tmp_container:
                     pinput.append((classes,universal_set,j,n))
                 results = p.starmap(importance_calculator,pinput)
-
+                
                 ## construct main matrix
                 for item,importances in zip(tmp_container,results):
                     importance = np.sum(importances, axis=0)
                     i1 = [self.node_indices[x] for x in item]
                     i2 = [[x] for x in i1]
                     to_add = sp.csr_matrix((nn, nn))
-                    to_add[i2, i1] = importance  
+                    to_add[i2, i1] = importance
                     to_add = to_add.tocsr() # this prevents memory leaks
                     matrix += to_add
 
+                ## reset the container
+                tmp_container = []
+
+                ## add break condition
                 if  len(tmp_container) < 1:
                     break
 
