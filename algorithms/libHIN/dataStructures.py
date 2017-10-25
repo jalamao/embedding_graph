@@ -215,7 +215,7 @@ class HeterogeneousInformationNetwork:
             avgdegree = sum(degrees.values()) * 1.0 / len(degrees)
         i=0
         tmp_container = []
-        bsize = 1000
+        bsize = 100
         
         if parallel:
 
@@ -244,8 +244,6 @@ class HeterogeneousInformationNetwork:
                 ## add break condition
                 if  len(tmp_container) < 1:
                     break
-
-                tmp_container = []
 
         else:
             
