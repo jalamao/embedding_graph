@@ -26,7 +26,7 @@ def decompose_test(fname, delim):
         
     return embedding
 
-def test_classification_imdb():
+def test_classification(graph,delimiter):
 
     ## CV classification
     from sklearn.ensemble import RandomForestClassifier
@@ -53,7 +53,7 @@ def test_classification_imdb():
 
     ## result container
 
-    embedding = decompose_test("../data/imdb_gml.gml","---")
+    embedding = decompose_test(graph,delimiter)
     
     results = []
     for k,v in classifiers.items():
@@ -70,7 +70,7 @@ def test_classification_imdb():
     print("Finished test 2 - classification")
 
 
-def test_automl():
+def test_automl(graph, delimiter):
 
     import autosklearn.classification
     from sklearn.multiclass import OneVsRestClassifier
@@ -81,7 +81,7 @@ def test_automl():
     classifiers = {'autoML' :autosklearn.classification.AutoSklearnClassifier(per_run_time_limit=15, time_left_for_this_task=1200)}
 
     ## result container
-    embedding = decompose_test("../data/imdb_gml.gml","---")
+    embedding = decompose_test(graph,delimiter)
     
     results = []
     for k,v in classifiers.items():
@@ -97,14 +97,14 @@ def test_automl():
 
     print("Finished test 2 - classification")
 
-def test_rnn():
+def test_rnn(graph, delimiter):
 
     from sklearn.model_selection import StratifiedKFold
     from keras.models import Sequential
     from keras.layers import Dense
     from sklearn.model_selection import KFold
     from sklearn.metrics import f1_score
-    embedding = decompose_test("../data/imdb_gml.gml","---")
+    embedding = decompose_test(graph,delimiter)
     cvscores = []
 
     X = embedding['data']
@@ -157,10 +157,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--test_classification_imdb")
+    parser.add_argument("--test_classification")
     parser.add_argument("--test_automl")
     parser.add_argument("--decompose_test")
     parser.add_argument("--test_label_prop")
+    parser.add_argument("--graph")
+    parser.add_argument("--delimiter")
     parser.add_argument("--test_rnn")
     
     args = parser.parse_args()
@@ -171,10 +173,10 @@ if __name__ == "__main__":
     if args.decompose_test:
         decompose_test(args.decompose_test," ")
         
-    if args.test_classification_imdb:
-        test_classification_imdb()
+    if args.test_classification:
+        test_classification(args.graph,args.delimiter)
 
     if args.test_automl:
-        test_automl()
+        test_automl(args.graph,args.delimiter)
     if args.test_rnn:
-        test_rnn()
+        test_rnn(args.graph,args.delimiter)
