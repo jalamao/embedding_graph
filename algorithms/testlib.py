@@ -103,23 +103,26 @@ def test_rnn():
     from keras.models import Sequential
     from keras.layers import Dense
     from sklearn.model_selection import KFold
+    from sklearn.metrics import f1_score
     embedding = decompose_test("../data/imdb_gml.gml","---")
     cvscores = []
 
     X = embedding['data']
     Y = embedding['targets']
     print(X.shape,Y.shape)
-    kf = KFold(n_splits=5, random_state=None, shuffle=False)
+    kf = KFold(n_splits=10,random_state=None, shuffle=False)
     for train, test in kf.split(X):
         # create model
         model = Sequential()
         model.add(Dense(X.shape[1], input_dim=300, activation='relu'))
         model.add(Dense(100, activation='relu'))
+        model.add(Dense(50,activation='relu'))
+        model.add(Dense(30, activation='relu'))
         model.add(Dense(Y.shape[1], activation='sigmoid'))
         # Compile model
         model.compile(loss='binary_crossentropy', optimizer='adam')
         # Fit the model
-        model.fit(X[train], Y[train], epochs=150, batch_size=50, verbose=1)
+        model.fit(X[train], Y[train], epochs=300, batch_size=50, verbose=1)
         # evaluate the model
         preds = model.predict(X[test])
         preds[preds>=0.5] = 1
