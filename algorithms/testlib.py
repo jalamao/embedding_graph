@@ -59,7 +59,7 @@ def test_classification_imdb():
     for k,v in classifiers.items():
 
         v = OneVsRestClassifier(v)
-        scores = cross_val_score(v, embedding['data'], embedding['targets'], cv=5, scoring='f1_weighted',n_jobs=4)        
+        scores = cross_val_score(v, embedding['data'], embedding['targets'], cv=5, scoring='f1_weighted',n_jobs=16)        
         results.append((k,np.mean(scores)))
         
     results= sorted(results, key=lambda tup: tup[1])
