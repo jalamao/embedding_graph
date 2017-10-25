@@ -171,7 +171,7 @@ if __name__ == "__main__":
         test_label_propagation()
             
     if args.decompose_test:
-        decompose_test(args.graph,args.delimiter)
+        decompose_test(args.decompose_test," ")
         
     if args.test_classification:
         test_classification(args.graph,args.delimiter)
