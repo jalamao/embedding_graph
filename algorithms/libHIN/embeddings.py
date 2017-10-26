@@ -55,7 +55,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
 
     ## initialize
 
-    if n > 5000:
+    if n > 50000:
         vectors = sp.csr_matrix((n, n))
     else:
         vectors = np.zeros((n, n))
@@ -73,8 +73,8 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
         for enx, pr_vector in enumerate(results):
             if pr_vector != None:
                 vectors[pr_vector[0],:] = pr_vector[1]
-            if enx % 1000 == 0:
-                vectors = vectors.tocsr()
+            #if enx % 1000 == 0:
+            #    vectors = vectors.tocsr()
     else:
         if verbose:
             emit_state("Non-Parallel embedding in progress..")
