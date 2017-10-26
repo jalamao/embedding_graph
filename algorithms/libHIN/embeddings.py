@@ -73,7 +73,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
         for pr_vector in results:
             if pr_vector != None:
                 vectors[pr_vector[0],:] = pr_vector[1]
-                vectors.to_csr()
+                vectors = vectors.tocsr()
     else:
         if verbose:
             emit_state("Non-Parallel embedding in progress..")
@@ -83,9 +83,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
             if norm > 0:
                 pr = pr / np.linalg.norm(pr, 2)
                 vectors[index, :] = pr
-
                 
-
     if verbose:
         emit_state("Finished with embedding..")
     if return_type == "raw":
