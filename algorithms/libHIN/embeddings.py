@@ -45,7 +45,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
 
     ## initialize
 
-    if n > 5000:
+    if n > 50000:
         vectors = sp.lil_matrix((n, n))
     else:
         vectors = np.zeros((n, n))
