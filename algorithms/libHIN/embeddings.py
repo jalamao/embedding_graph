@@ -70,9 +70,10 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
         import multiprocessing as mp
         with mp.Pool(processes=mp.cpu_count()) as p:
             results = p.map(pr_kernel,range(n))
-        for pr_vector in results:
+        for enx, pr_vector in enumerate(results):
             if pr_vector != None:
                 vectors[pr_vector[0],:] = pr_vector[1]
+            if enx % 100 == 0:
                 vectors = vectors.tocsr()
     else:
         if verbose:
