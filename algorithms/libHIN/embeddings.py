@@ -11,6 +11,16 @@ def pr_kernel(index_row):
     if norm > 0:
         pr = pr / np.linalg.norm(pr, 2)
         return (index_row,pr)
+
+def csr_vappend(a,b):
+
+    ##  this is an effictient variation of vstack - for sparse result concatenation.
+    
+    a.data = np.hstack((a.data,b.data))
+    a.indices = np.hstack((a.indices,b.indices))
+    a.indptr = np.hstack((a.indptr,(b.indptr + a.nnz)[1:]))
+    a._shape = (a.shape[0]+b.shape[0],b.shape[1])
+    #return a
                 
 def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw",verbose=False):
 
