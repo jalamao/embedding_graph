@@ -55,8 +55,8 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
 
     ## initialize
 
-    if n > 50000:
-        vectors = sp.csr_matrix((n, n))
+    if n > 5000:
+        vectors = sp.lil_matrix((n, n))
     else:
         vectors = np.zeros((n, n))
 
@@ -64,6 +64,8 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
 
         import mkl
         mkl.set_num_threads(1)
+
+        vdim = vectors.shape
         
         if verbose:
             emit_state("Parallel embedding in progress..")
@@ -73,8 +75,12 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
         for enx, pr_vector in enumerate(results):
             if pr_vector != None:
                 vectors[pr_vector[0],:] = pr_vector[1]
-            #if enx % 1000 == 0:
-            #    vectors = vectors.tocsr()
+                
+                #col    = range(0,vdim[0],1)
+                #row    = np.repeat(pr_vector[0],vdim[0])
+                #val    = pr_vector[1]          
+                #vectors = sp.csr_matrix((val, (row,col)), shape=(vdim[0],vdim[1]), dtype=float)
+                
     else:
         if verbose:
             emit_state("Non-Parallel embedding in progress..")
@@ -88,6 +94,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
     if verbose:
         emit_state("Finished with embedding..")
     if return_type == "raw":
+#        print(vectors.todense())
         return {'data' : vectors,'targets' : hin.label_matrix}
 
     else:
