@@ -54,14 +54,14 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
         graph = stochastic_normalization(converted)
 
     ## initialize
-
-    if n > 5:
+    size_threshold = 5000
+    if n > size_threshold:
         vectors = sp.csr_matrix((n, n))
     else:
         vectors = np.zeros((n, n))
 
     if parallel:
-
+        
         import mkl
         mkl.set_num_threads(1)
 
@@ -74,11 +74,13 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
             results = p.map(pr_kernel,range(n))
         for enx, pr_vector in enumerate(results):
             if pr_vector != None:
-                #vectors[pr_vector[0],:] = pr_vector[1]
-                col    = range(0,vdim[0],1)
-                row    = np.repeat(pr_vector[0],vdim[0])
-                val    = pr_vector[1]
-                vectors = vectors +  sp.csr_matrix((val, (row,col)), shape=(vdim[0],vdim[1]), dtype=float)
+                if size_threshold > 5000:            
+                    col = range(0,vdim[0],1)
+                    row = np.repeat(pr_vector[0],vdim[0])
+                    val = pr_vector[1]
+                    vectors = vectors +  sp.csr_matrix((val, (row,col)), shape=(vdim[0],vdim[1]), dtype=float)
+                else:
+                    vectors[pr_vector[0],:] = pr_vector[1]
     else:
         if verbose:
             emit_state("Non-Parallel embedding in progress..")
