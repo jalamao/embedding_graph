@@ -101,7 +101,7 @@ def test_rnn(graph, delimiter):
 
     from sklearn.model_selection import StratifiedKFold
     from keras.models import Sequential
-    from keras.layers import Dense
+    from keras.layers import Dense, Dropout
     from sklearn.model_selection import KFold
     from sklearn.metrics import f1_score
     embedding = decompose_test(graph,delimiter)
@@ -114,15 +114,19 @@ def test_rnn(graph, delimiter):
     for train, test in kf.split(X):
         # create model
         model = Sequential()
-        model.add(Dense(X.shape[1], input_dim=300, activation='relu'))
-        model.add(Dense(100, activation='relu'))
+        model.add(Dense(X.shape[1], input_dim=X.shape[1], activation='relu'))
+        model.add(Dense(200, activation='relu'))
+        model.add(Dropout(0.2))
         model.add(Dense(50,activation='relu'))
+        model.add(Dropout(0.2))
+        model.add(Dense(40,activation='relu'))
+        model.add(Dropout(0.1))
         model.add(Dense(30, activation='relu'))
         model.add(Dense(Y.shape[1], activation='sigmoid'))
         # Compile model
         model.compile(loss='binary_crossentropy', optimizer='adam')
         # Fit the model
-        model.fit(X[train], Y[train], epochs=300, batch_size=50, verbose=1)
+        model.fit(X[train], Y[train], epochs=300, batch_size=40, verbose=1)
         # evaluate the model
         preds = model.predict(X[test])
         preds[preds>=0.5] = 1
@@ -180,4 +184,4 @@ if __name__ == "__main__":
         test_automl(args.graph,args.delimiter)
         
     if args.test_rnn:
-        test_rnn(args.graph,args.delimiter)
+        test_rnn(args.graph,"---")
