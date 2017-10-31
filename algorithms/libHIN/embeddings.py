@@ -12,6 +12,22 @@ def pr_kernel(index_row):
         pr = pr / np.linalg.norm(pr, 2)
         return (index_row,pr)
 
+def hadamand_sum(embedding):
+
+    ## construct pairwise feature constructs, representing individual edges
+    ## return a map, containing index pair tuple, and a feature vector
+    
+    pass
+
+def hadamand_prod():
+    pass
+
+def hadamand_L1():
+    pass
+
+def hadamand_L2():
+    pass
+    
 def csr_vappend(a,b):
 
     ##  this is an effictient variation of vstack - for sparse result concatenation.
