@@ -22,7 +22,7 @@ def csr_vappend(a,b):
     a._shape = (a.shape[0]+b.shape[0],b.shape[1])
     #return a
                 
-def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw",verbose=False):
+def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw",verbose=False, generate_edge_features = None):
 
     if verbose:
         emit_state("Beginning embedding process..")
@@ -72,9 +72,13 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
         import multiprocessing as mp
         with mp.Pool(processes=mp.cpu_count()) as p:
             results = p.map(pr_kernel,range(n))
+
+        ## ze tukaj naredi edge embedding? output to file
+        ## v matriko lahko le na koncu.. to je treba fino dodelat.
+            
         for enx, pr_vector in enumerate(results):
             if pr_vector != None:
-                if size_threshold > 5000:            
+                if  size_threshold > 5000:            
                     col = range(0,vdim[0],1)
                     row = np.repeat(pr_vector[0],vdim[0])
                     val = pr_vector[1]
@@ -93,9 +97,20 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
                 
     if verbose:
         emit_state("Finished with embedding..")
+
+    if generate_edge_features == None:
+        emit_state("Generating edge-based features")
+
+        ## select the pairwise composition function
+        ## for each pair of nodes, f(n1,n2) = E
+        ## edge labels are tuples of length 2
+        ## for constructed edge in edges, do: join
+        
     if return_type == "raw":
         #print(vectors.todense())
         return {'data' : vectors,'targets' : hin.label_matrix}
+    elif return_type == "file":
+        ## write to two separate files..
 
     else:
         ## return bo dodelan, verjetno zgolj dve matriki tho.
@@ -110,4 +125,5 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
             'target_names': [str(x) for x in hin.label_list],
             'DESCR': None
         }
+        
         return {'train_features': train_features, 'test_features': test_features}
