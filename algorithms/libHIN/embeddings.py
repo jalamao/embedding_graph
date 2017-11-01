@@ -38,22 +38,31 @@ def csr_vappend(a,b):
     a._shape = (a.shape[0]+b.shape[0],b.shape[1])
     #return a
                 
-def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw",verbose=False, generate_edge_features = None):
+def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None):
 
     if verbose:
         emit_state("Beginning embedding process..")
         
-    global graph
+    global graph ## this holds the graph being processes
+    
     # embed the input network to a term matrix    
     assert isinstance(hin, HeterogeneousInformationNetwork)
 
-    ## special treatment of the decomposed network appears here
+
+    ## .......................
+    ## Use decomposed network
+    ## .......................
+    
     if use_decomposition:
         if verbose:
             emit_state("Using decomposed networks..")
         n = hin.decomposed['decomposition'].shape[0]
         graph = stochastic_normalization(hin.decomposed['decomposition'])
-    
+
+    ## .......................
+    ## Use raw, weighted network
+    ## .......................
+        
     else:
         if verbose:
             emit_state("Using raw networks..")
@@ -67,66 +76,76 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="raw
 
         if verbose:
             emit_state("Normalizing the adj matrix..")
-        graph = stochastic_normalization(converted)
+        graph = stochastic_normalization(converted) ## normalize
 
-    ## initialize
-    size_threshold = 5000
-    if n > size_threshold:
-        vectors = sp.csr_matrix((n, n))
-    else:
-        vectors = np.zeros((n, n))
 
-    if parallel:
+    ## .......................
+    ## .......................
+    ## Graph embedding part
+    ## .......................
+    ## .......................
         
+    ## use parallel implementation of PR 
+    if parallel:        
         import mkl
-        mkl.set_num_threads(1)
-
-        vdim = vectors.shape
-        
+        mkl.set_num_threads(1) ## this ports process to individual cores
         if verbose:
             emit_state("Parallel embedding in progress..")
-        import multiprocessing as mp
+        import multiprocessing as mp ## initialize the MP part
         with mp.Pool(processes=mp.cpu_count()) as p:
-            results = p.map(pr_kernel,range(n))
+            results = p.map(pr_kernel,range(n)) ## those are the embedded vectors
 
-        ## ze tukaj naredi edge embedding? output to file
-        ## v matriko lahko le na koncu.. to je treba fino dodelat.
-            
-        for enx, pr_vector in enumerate(results):
-            if pr_vector != None:
-                if  size_threshold > 5000:            
-                    col = range(0,vdim[0],1)
-                    row = np.repeat(pr_vector[0],vdim[0])
-                    val = pr_vector[1]
-                    vectors = vectors +  sp.csr_matrix((val, (row,col)), shape=(vdim[0],vdim[1]), dtype=float)
-                else:
-                    vectors[pr_vector[0],:] = pr_vector[1]
+    ## the baseline
     else:
         if verbose:
             emit_state("Non-Parallel embedding in progress..")
+        results = []
         for index in range(n):
             pr = page_rank(graph, [index], try_shrink=True)
             norm = np.linalg.norm(pr, 2)
             if norm > 0:
                 pr = pr / np.linalg.norm(pr, 2)
-                vectors[index, :] = pr
-                
+                results.append((index,pr))
+        
     if verbose:
         emit_state("Finished with embedding..")
 
     if generate_edge_features == None:
         emit_state("Generating edge-based features")
 
+        ## TODO
         ## select the pairwise composition function
         ## for each pair of nodes, f(n1,n2) = E
         ## edge labels are tuples of length 2
         ## for constructed edge in edges, do: join
         
-    if return_type == "raw":
-        #print(vectors.todense())
+    if return_type == "matrix":
+
+        ## this call returns a np/sp matrix of data + np label matrix. This is the best way to directly use the results, yet is memory-exhaustive O(m)~|V|^2 for a square matrix. Numpy can have problems with such sizes..
+
+        ## this threshold specifies the data structure for final embeddings..
+        size_threshold = 50000
+        if n > size_threshold:
+            vectors = sp.csr_matrix((n, n))
+        else:
+            vectors = np.zeros((n, n))
+        
+        for pr_vector in results:
+            if pr_vector != None:
+                if  size_threshold > 50000:            
+                    col = range(0,vdim[0],1)
+                    row = np.repeat(pr_vector[0],vdim[0])
+                    val = pr_vector[1]
+                    vectors = vectors +  sp.csr_matrix((val, (row,col)), shape=(vdim[0],vdim[1]), dtype=float)
+                else:
+                    vectors[pr_vector[0],:] = pr_vector[1]
+                    
         return {'data' : vectors,'targets' : hin.label_matrix}
+
+    
     elif return_type == "file":
         ## write to two separate files..
+        pass
 
     else:
         ## return bo dodelan, verjetno zgolj dve matriki tho.
