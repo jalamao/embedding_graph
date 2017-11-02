@@ -11,6 +11,8 @@ def pr_kernel(index_row):
     if norm > 0:
         pr = pr / np.linalg.norm(pr, 2)
         return (index_row,pr)
+    else:
+        return None
 
 def hadamand_sum(embedding):
 
@@ -110,7 +112,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
     if verbose:
         emit_state("Finished with embedding..")
 
-    if generate_edge_features == None:
+    if generate_edge_features != None:
         emit_state("Generating edge-based features")
 
         ## TODO
