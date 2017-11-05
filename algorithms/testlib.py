@@ -198,6 +198,7 @@ def parse_mat(fname, delim):
 
 
     from sklearn.model_selection import ShuffleSplit
+    from sklearn.cross_validation import StratifiedShuffleSplit
     import scipy.io as spi
 
 #    data = spi.loadmat("../data/Homo_sapiens.mat")
@@ -207,7 +208,7 @@ def parse_mat(fname, delim):
     
     ## 10 splits 50% train
     
-    rs = ShuffleSplit(n_splits=5, test_size=0.5, random_state=0)    
+    rs = StratifiedShuffleSplit(embedding['targets'].todense(), 1, test_size=0.5,random_state=42)
             
     results = []
 
@@ -217,16 +218,16 @@ def parse_mat(fname, delim):
     scores = []
     batch = 0
     
-    for train_index, test_index in rs.split(embedding['data'],embedding['targets']):
+    for train_index, test_index in rs:
 
         batch += 1
         print("Fold: {}".format(batch))
-        train_X = embedding['data'][train_index,]
-        train_Y = embedding['targets'][train_index,]
-        test_X = embedding['data'][test_index,]
-        test_Y = embedding['targets'][test_index,]
+        train_X = embedding['data'][train_index]
+        train_Y = embedding['targets'][train_index]
+        test_X = embedding['data'][test_index]
+        test_Y = embedding['targets'][test_index]
         model_preds = v.fit(train_X,train_Y).predict(train_X)
-        sc = f1_score(train_Y, model_preds, average='macro')
+        sc = f1_score(train_Y, model_preds, average='samples')
         scores.append(sc)
             
     results.append(("LR",np.mean(scores)))
@@ -274,5 +275,6 @@ if __name__ == "__main__":
 
     if args.frommat:
         parse_mat(args.graph, " ")
+        
     if args.test_write:
         test_writing(args.graph, " ","test.emb")
