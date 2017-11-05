@@ -5,6 +5,12 @@ from .infolog import emit_state
 import numpy as np
 import scipy.sparse as sp
 
+def return_communities(net):
+
+    import community
+    partitions = community.best_partition(net)
+    return partitions
+
 def pr_kernel(index_row):
     pr = page_rank(graph, [index_row], try_shrink=True)
     norm = np.linalg.norm(pr, 2)
@@ -40,7 +46,7 @@ def csr_vappend(a,b):
     a._shape = (a.shape[0]+b.shape[0],b.shape[1])
     #return a
                 
-def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,embedding_file=None,target_file=None,from_mat=False):
+def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,embedding_file=None,target_file=None,from_mat=False, outfile=None):
 
     if verbose:
         emit_state("Beginning embedding process..")
@@ -77,6 +83,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
             if verbose:
                 emit_state("Using raw networks..")
             import networkx as nx
+            
             ## this works on a raw network.
             n = len(hin.graph)
             if hin.weighted != False:
@@ -128,6 +135,10 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
         ## for each pair of nodes, f(n1,n2) = E
         ## edge labels are tuples of length 2
         ## for constructed edge in edges, do: join
+
+
+    if verbose:
+        emit_state("Writing to file..")
         
     if return_type == "matrix":
 
@@ -146,18 +157,31 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
                     col = range(0,n,1)
                     row = np.repeat(pr_vector[0],n)
                     val = pr_vector[1]
-                    vectors = vectors +  sp.csr_matrix((val, (row,col)), shape=(vdim[0],vdim[1]), dtype=float)
+                    vectors = vectors + sp.csr_matrix((val, (row,col)), shape=(vdim[0],vdim[1]), dtype=float)
                 else:
                     vectors[pr_vector[0],:] = pr_vector[1]
                     
-        return {'data' : vectors,'targets' : hin.label_matrix.todense()}
+        return {'data' : vectors,'targets' : hin.label_matrix}
 
     
     elif return_type == "file":
 
-        # embedding_file
-        # target_file                
-        ## write to two separate files..
+        if outfile != None:
+            f=open(outfile,'a')
+            for rv in results:
+                if rv != None:
+                    
+                    index = rv[0] ## indices
+                    vals = rv[1] ## pagerank vectors
+                    
+                    fv = np.concatenate(([index],vals))
+                    outstring = ",".join([str(x) for x in fv.tolist()])+"\n"
+                    f.write(outstring)
+
+            f.close()
+
+        else:
+            print("Please enter output file name..")
         
         pass
 

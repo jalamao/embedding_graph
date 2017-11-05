@@ -155,6 +155,15 @@ def test_label_propagation():
     pmat = run_label_propagation(decomposed,weights="balanced")
     print(pmat)
 
+
+def test_writing(fname,delim,outname):
+
+    example_net = load_hinmine_object(fname,delim) ## add support for weight
+    embedding = hinmine_embedding(example_net, parallel=True,verbose=True,use_decomposition=False,return_type="file",outfile=outname)
+    
+    pass
+
+
 def parse_mat(fname, delim):
 
     ## direct decomposition
@@ -176,30 +185,58 @@ def parse_mat(fname, delim):
     from sklearn.svm import LinearSVC
     from sklearn.neighbors import KNeighborsClassifier
     from sklearn.linear_model import LogisticRegression
+    from sklearn.naive_bayes import BernoulliNB
 
-    classifiers = {'rf' : RandomForestClassifier(n_estimators=100, random_state=1),
-                   'dummy' : DummyClassifier(strategy='most_frequent',random_state=13),
-                   'nb' : GaussianNB(),
-                   'ada' : AdaBoostClassifier(n_estimators=500),
-                   'LR' : LogisticRegression( penalty='l1', tol=0.01),
-                   'SVC' : LinearSVC(random_state=0),
-                   'MLP' : MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(8, 5,3,2), random_state=13),
-                   'knn' : OneVsRestClassifier(KNeighborsClassifier(n_neighbors=10))}
+    # classifiers = {'rf' : RandomForestClassifier(n_estimators=100, random_state=1),
+    #                'dummy' : DummyClassifier(strategy='most_frequent',random_state=13),
+    #                'nb' : GaussianNB(),
+    #                'ada' : AdaBoostClassifier(n_estimators=500),
+    #                'LR' : LogisticRegression( penalty='l1', tol=0.01),
+    #                'SVC' : LinearSVC(random_state=0),
+    #                'MLP' : MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(8, 5,3,2), random_state=13),
+    #                'knn' : OneVsRestClassifier(KNeighborsClassifier(n_neighbors=10))}
+
+
+    from sklearn.model_selection import ShuffleSplit
+    import scipy.io as spi
+
+#    data = spi.loadmat("../data/Homo_sapiens.mat")
+#    print(data)
+#    embedding['data'] = data['network']
+#    embedding['targets'] = data['group']
     
-        
+    ## 10 splits 50% train
+    
+    rs = ShuffleSplit(n_splits=5, test_size=0.5, random_state=0)    
+            
     results = []
-    for k,v in classifiers.items():
-        print("Training {}".format(k))
-        v = OneVsRestClassifier(v)
-        scores = cross_val_score(v, embedding['data'], embedding['targets'], cv=5, scoring='f1_weighted',n_jobs=4)        
-        results.append((k,np.mean(scores)))
+
+    v = LogisticRegression(penalty='l2')
+    v = OneVsRestClassifier(v)
+
+    scores = []
+    batch = 0
+    
+    for train_index, test_index in rs.split(embedding['data'],embedding['targets']):
+
+        batch += 1
+        print("Fold: {}".format(batch))
+        train_X = embedding['data'][train_index,]
+        train_Y = embedding['targets'][train_index,]
+        test_X = embedding['data'][test_index,]
+        test_Y = embedding['targets'][test_index,]
+        model_preds = v.fit(train_X,train_Y).predict(train_X)
+        sc = f1_score(train_Y, model_preds, average='macro')
+        scores.append(sc)
+            
+    results.append(("LR",np.mean(scores)))
         
     results= sorted(results, key=lambda tup: tup[1])
     for x in results:
         cls, score = x
         print("Classifier: {} performed with score of {}".format(cls,score))
 
-    print("Finished test 2 - classification")
+    print("Finished test - classification basic")
     
 
 if __name__ == "__main__":
@@ -216,6 +253,7 @@ if __name__ == "__main__":
     parser.add_argument("--delimiter")
     parser.add_argument("--test_rnn")
     parser.add_argument("--frommat")
+    parser.add_argument("--test_write")
     
     args = parser.parse_args()
 
@@ -236,3 +274,5 @@ if __name__ == "__main__":
 
     if args.frommat:
         parse_mat(args.graph, " ")
+    if args.test_write:
+        test_writing(args.graph, " ","test.emb")
