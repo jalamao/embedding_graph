@@ -61,7 +61,8 @@ class HeterogeneousInformationNetwork:
 
         self.midpoint_files = {}
         self.feature_vectors = {}
-        self.process_network(label_delimiter)
+        if  network != None:            
+            self.process_network(label_delimiter)
 
     def add_label(self, node, label_id, label_name=None):
         if label_name is None:
@@ -77,7 +78,7 @@ class HeterogeneousInformationNetwork:
             new_class.index = len(self.label_list) - 1
             self.graph.node[node]['labels'].append(new_class)
 
-    def process_network(self, label_delimiter):
+    def process_network(self, label_delimiter):        
         if self.target_tag:
             basic_types = set([self.graph.node[x]['type'] for x in self.graph.node if 'labels' in self.graph.node[x]])
             if len(basic_types) != 1:

@@ -4,21 +4,32 @@ import numpy as np
 
 def load_hinmine_object(infile,label_delimiter=" ",weight_tag = False, targets=True):
 
-    if ".gml" in infile:
-        ## parse as gml object
-        from networkx import read_gml ## lazy
-        net = read_gml(infile)
-        
-    elif ".txt" in infile:
-        ## parse as edgelist
-        weight_tag = "weight"
-        net = parse_edgelist(infile)
-        
-    else:
-        ## parse as a previously constructed nx object
-        net = infile
 
-    hin = HeterogeneousInformationNetwork(net, label_delimiter, weight_tag, target_tag = targets)
+    if ".mat" in infile:
+
+        hin = HeterogeneousInformationNetwork(None," ")
+        import scipy.io
+        mat = scipy.io.loadmat(infile)
+        hin.label_matrix = mat['group']
+        hin.graph = mat['network']
+        return hin
+
+    else:    
+        if ".gml" in infile:
+            ## parse as gml object
+            from networkx import read_gml ## lazy
+            net = read_gml(infile)
+        
+        elif ".txt" in infile:
+            ## parse as edgelist
+            weight_tag = "weight"
+            net = parse_edgelist(infile)
+    
+        else:
+            ## parse as a previously constructed nx object
+            net = infile
+
+        hin = HeterogeneousInformationNetwork(net, label_delimiter, weight_tag, target_tag = targets)
     train_indices = []
     test_indices = []
     for index, node in enumerate(hin.node_list):

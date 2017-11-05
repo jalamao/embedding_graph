@@ -155,6 +155,53 @@ def test_label_propagation():
     pmat = run_label_propagation(decomposed,weights="balanced")
     print(pmat)
 
+def parse_mat(fname, delim):
+
+    ## direct decomposition
+    example_net = load_hinmine_object(fname,delim) ## add support for weight
+    embedding = hinmine_embedding(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=True)
+
+    print("Trainset dimension {}, testset dimension {}.".format(embedding['data'].shape,embedding['targets'].shape))
+
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.multiclass import OneVsRestClassifier
+    from sklearn.model_selection import cross_val_score
+    from sklearn.dummy import DummyClassifier
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import f1_score
+    from sklearn.metrics import accuracy_score
+    from sklearn.naive_bayes import GaussianNB
+    from sklearn.ensemble import AdaBoostClassifier
+    from sklearn.neural_network import MLPClassifier
+    from sklearn.svm import LinearSVC
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.linear_model import LogisticRegression
+
+    classifiers = {'rf' : RandomForestClassifier(n_estimators=100, random_state=1),
+                   'dummy' : DummyClassifier(strategy='most_frequent',random_state=13),
+                   'nb' : GaussianNB(),
+                   'ada' : AdaBoostClassifier(n_estimators=500),
+                   'LR' : LogisticRegression( penalty='l1', tol=0.01),
+                   'SVC' : LinearSVC(random_state=0),
+                   'MLP' : MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(8, 5,3,2), random_state=13),
+                   'knn' : OneVsRestClassifier(KNeighborsClassifier(n_neighbors=10))}
+    
+        
+    results = []
+    for k,v in classifiers.items():
+        print("Training {}".format(k))
+        v = OneVsRestClassifier(v)
+        scores = cross_val_score(v, embedding['data'], embedding['targets'], cv=5, scoring='f1_weighted',n_jobs=4)        
+        results.append((k,np.mean(scores)))
+        
+    results= sorted(results, key=lambda tup: tup[1])
+    for x in results:
+        cls, score = x
+        print("Classifier: {} performed with score of {}".format(cls,score))
+
+    print("Finished test 2 - classification")
+    
+
 if __name__ == "__main__":
 
     import argparse
@@ -168,6 +215,7 @@ if __name__ == "__main__":
     parser.add_argument("--graph")
     parser.add_argument("--delimiter")
     parser.add_argument("--test_rnn")
+    parser.add_argument("--frommat")
     
     args = parser.parse_args()
 
@@ -184,4 +232,7 @@ if __name__ == "__main__":
         test_automl(args.graph,args.delimiter)
         
     if args.test_rnn:
-        test_rnn(args.graph,"---")
+        test_rnn(args.graph, "---")
+
+    if args.frommat:
+        parse_mat(args.graph, " ")

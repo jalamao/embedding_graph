@@ -40,7 +40,7 @@ def csr_vappend(a,b):
     a._shape = (a.shape[0]+b.shape[0],b.shape[1])
     #return a
                 
-def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None):
+def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,embedding_file=None,target_file=None,from_mat=False):
 
     if verbose:
         emit_state("Beginning embedding process..")
@@ -66,19 +66,27 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
     ## .......................
         
     else:
-        if verbose:
-            emit_state("Using raw networks..")
-        import networkx as nx
-        ## this works on a raw network.
-        n = len(hin.graph)
-        if hin.weighted != False:
-            converted = nx.to_scipy_sparse_matrix(hin.graph,weight=hin.weighted)
-        else:
-            converted = nx.to_scipy_sparse_matrix(hin.graph)
 
-        if verbose:
-            emit_state("Normalizing the adj matrix..")
-        graph = stochastic_normalization(converted) ## normalize
+        if from_mat:
+
+            graph = stochastic_normalization(hin.graph)
+            n = hin.graph.shape[0]
+            
+        else:
+            
+            if verbose:
+                emit_state("Using raw networks..")
+            import networkx as nx
+            ## this works on a raw network.
+            n = len(hin.graph)
+            if hin.weighted != False:
+                converted = nx.to_scipy_sparse_matrix(hin.graph,weight=hin.weighted)
+            else:
+                converted = nx.to_scipy_sparse_matrix(hin.graph)
+
+            if verbose:
+                emit_state("Normalizing the adj matrix..")
+            graph = stochastic_normalization(converted) ## normalize
 
 
     ## .......................
@@ -126,7 +134,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
         ## this call returns a np/sp matrix of data + np label matrix. This is the best way to directly use the results, yet is memory-exhaustive O(m)~|V|^2 for a square matrix. Numpy can have problems with such sizes..
 
         ## this threshold specifies the data structure for final embeddings..
-        size_threshold = 50000
+        size_threshold = 100000
         if n > size_threshold:
             vectors = sp.csr_matrix((n, n))
         else:
@@ -134,19 +142,23 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
         
         for pr_vector in results:
             if pr_vector != None:
-                if  size_threshold > 50000:            
-                    col = range(0,vdim[0],1)
-                    row = np.repeat(pr_vector[0],vdim[0])
+                if  n > size_threshold:
+                    col = range(0,n,1)
+                    row = np.repeat(pr_vector[0],n)
                     val = pr_vector[1]
                     vectors = vectors +  sp.csr_matrix((val, (row,col)), shape=(vdim[0],vdim[1]), dtype=float)
                 else:
                     vectors[pr_vector[0],:] = pr_vector[1]
                     
-        return {'data' : vectors,'targets' : hin.label_matrix}
+        return {'data' : vectors,'targets' : hin.label_matrix.todense()}
 
     
     elif return_type == "file":
+
+        # embedding_file
+        # target_file                
         ## write to two separate files..
+        
         pass
 
     else:
