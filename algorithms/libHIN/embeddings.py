@@ -5,6 +5,7 @@ from .infolog import emit_state
 import numpy as np
 import scipy.sparse as sp
 from .community_detection import *
+from .graphlet_calculation import count_graphlets_orca
 import networkx as nx
 from collections import Counter
 
@@ -55,7 +56,7 @@ def csr_vappend(a,b):
     a._shape = (a.shape[0]+b.shape[0],b.shape[1])
     #return a
                 
-def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,embedding_file=None,target_file=None,from_mat=False, outfile=None,community_information=True):
+def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,embedding_file=None,target_file=None,from_mat=False, outfile=None,community_information=True,graphlet_binary="./orca"):
 
     if verbose:
         emit_state("Beginning embedding process..")
@@ -135,12 +136,27 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
     if verbose:
         emit_state("Finished with embedding..")
 
-    if community_information:        
+    if community_information:
+
+        if verbose:
+            emit_state("Mapping the community information..")
+        
         partition_sizes = return_communities(graph)
         for k,v in partition_sizes.items():
             for res in results:
                 if res != None:
                     res[1][k]*=v
+
+    if graphlet_binary != None:
+
+        graphlets = count_graphlets_orca(graph,graphlet_binary)
+        ## do the dot product between graphlets and the current results
+        
+        for res in results:
+            if res != None:
+                res[1][:] = np.add(res[1],graphlets)
+        
+        
         
     if generate_edge_features != None:
         emit_state("Generating edge-based features")
