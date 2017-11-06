@@ -138,7 +138,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
 
 
     if verbose:
-        emit_state("Writing to file..")
+        emit_state("Writing to output..")
         
     if return_type == "matrix":
 

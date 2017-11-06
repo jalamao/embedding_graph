@@ -22,13 +22,21 @@ def decompose_test(fname, delim):
     ## embedding
     print("Starting embedding..")
     embedding = hinmine_embedding(decomposed, parallel=True,verbose=True)
-    print(embedding)
+    print(embedding['data'].shape,embedding['targets'].shape)
         
     return embedding
 
 def test_classification(graph,delimiter):
 
-    ## CV classification
+    ## direct decomposition
+    if ".mat" in graph:
+        example_net = load_hinmine_object(graph,delimiter) ## add support for weight
+        embedding = hinmine_embedding(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=True)
+    else:
+        embedding = decompose_test(graph,"---")
+
+    print("Trainset dimension {}, testset dimension {}.".format(embedding['data'].shape,embedding['targets'].shape))
+
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.multiclass import OneVsRestClassifier
     from sklearn.model_selection import cross_val_score
@@ -41,31 +49,47 @@ def test_classification(graph,delimiter):
     from sklearn.neural_network import MLPClassifier
     from sklearn.svm import LinearSVC
     from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.naive_bayes import BernoulliNB
+    from sklearn import svm
 
+    from sklearn.cross_validation import StratifiedShuffleSplit
+    from sklearn.model_selection import ShuffleSplit
+    import scipy.io as spi
 
-    classifiers = {'rf' : RandomForestClassifier(n_estimators=100, random_state=1),
-                   'dummy' : DummyClassifier(strategy='most_frequent',random_state=13),
-                    'nb' : GaussianNB(),
-                   'ada' : AdaBoostClassifier(n_estimators=500),
-                   'SVC' : LinearSVC(random_state=0),
-                   'MLP' : MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(8, 5,3,2), random_state=13),
-                   'knn' : OneVsRestClassifier(KNeighborsClassifier(n_neighbors=10))}
-
-    ## result container
-
-    embedding = decompose_test(graph,delimiter)
+    ## 10 splits 50% train
     
+    rs = ShuffleSplit(3, test_size=0.5,random_state=42)
+            
     results = []
-    for k,v in classifiers.items():
 
-        v = OneVsRestClassifier(v)
-        scores = cross_val_score(v, embedding['data'], embedding['targets'], cv=5, scoring='f1_weighted',n_jobs=4)        
-        results.append((k,np.mean(scores)))
-        
+    v = LogisticRegression(penalty="l2")
+    v = OneVsRestClassifier(v)
+
+    batch = 0
+    for threshold in np.arange(0,0.5,0.02):        
+        scores = []
+        for train_index, test_index in rs.split(embedding['targets']):
+            batch += 1
+            print("Fold: {}".format(batch))
+            train_X = embedding['data'][train_index]
+            train_Y = embedding['targets'][train_index]
+            test_X = embedding['data'][test_index]
+            test_Y = embedding['targets'][test_index]
+            model_preds = v.fit(train_X,train_Y).predict_proba(test_X)
+            model_preds[model_preds > threshold] = 1
+            model_preds[model_preds <= threshold] = 0
+            sc = f1_score(test_Y, model_preds, average='micro')
+            scores.append(sc)
+            
+        results.append(("LR, t:{}".format(str(threshold)),np.mean(scores)))
+
     results= sorted(results, key=lambda tup: tup[1])
     for x in results:
         cls, score = x
         print("Classifier: {} performed with score of {}".format(cls,score))
+
+    print("Finished test - classification basic")
 
     print("Finished test 2 - classification")
 
@@ -187,28 +211,13 @@ def parse_mat(fname, delim):
     from sklearn.linear_model import LogisticRegression
     from sklearn.naive_bayes import BernoulliNB
 
-    # classifiers = {'rf' : RandomForestClassifier(n_estimators=100, random_state=1),
-    #                'dummy' : DummyClassifier(strategy='most_frequent',random_state=13),
-    #                'nb' : GaussianNB(),
-    #                'ada' : AdaBoostClassifier(n_estimators=500),
-    #                'LR' : LogisticRegression( penalty='l1', tol=0.01),
-    #                'SVC' : LinearSVC(random_state=0),
-    #                'MLP' : MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(8, 5,3,2), random_state=13),
-    #                'knn' : OneVsRestClassifier(KNeighborsClassifier(n_neighbors=10))}
 
-
-    from sklearn.model_selection import ShuffleSplit
     from sklearn.cross_validation import StratifiedShuffleSplit
     import scipy.io as spi
 
-#    data = spi.loadmat("../data/Homo_sapiens.mat")
-#    print(data)
-#    embedding['data'] = data['network']
-#    embedding['targets'] = data['group']
-    
     ## 10 splits 50% train
     
-    rs = StratifiedShuffleSplit(embedding['targets'].todense(), 1, test_size=0.5,random_state=42)
+    rs = StratifiedShuffleSplit(embedding['targets'], 1, test_size=0.5,random_state=42)
             
     results = []
 
@@ -262,7 +271,7 @@ if __name__ == "__main__":
         test_label_propagation()
             
     if args.decompose_test:
-        decompose_test(args.decompose_test," ")
+        decompose_test(args.graph,args.delimiter)
         
     if args.test_classification:
         test_classification(args.graph,args.delimiter)
