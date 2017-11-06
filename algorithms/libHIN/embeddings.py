@@ -4,12 +4,21 @@ from .core import stochastic_normalization, page_rank
 from .infolog import emit_state
 import numpy as np
 import scipy.sparse as sp
+from .community_detection import *
+import networkx as nx
+from collections import Counter
 
 def return_communities(net):
 
-    import community
-    partitions = community.best_partition(net)
-    return partitions
+    G = nx.Graph()
+    rows,cols = net.nonzero()
+    for row,col in zip(rows,cols):
+        G.add_edge(row,col)
+    partitions = best_partition(G)
+
+    cnts = Counter(partitions.values())
+    sizes = {k:cnts[v] for k,v in partitions.items()}
+    return sizes
 
 def pr_kernel(index_row):
     pr = page_rank(graph, [index_row], try_shrink=True)
@@ -46,7 +55,7 @@ def csr_vappend(a,b):
     a._shape = (a.shape[0]+b.shape[0],b.shape[1])
     #return a
                 
-def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,embedding_file=None,target_file=None,from_mat=False, outfile=None):
+def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,embedding_file=None,target_file=None,from_mat=False, outfile=None,community_information=True):
 
     if verbose:
         emit_state("Beginning embedding process..")
@@ -82,7 +91,6 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
             
             if verbose:
                 emit_state("Using raw networks..")
-            import networkx as nx
             
             ## this works on a raw network.
             n = len(hin.graph)
@@ -94,8 +102,8 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
             if verbose:
                 emit_state("Normalizing the adj matrix..")
             graph = stochastic_normalization(converted) ## normalize
-
-
+        
+            
     ## .......................
     ## .......................
     ## Graph embedding part
@@ -127,15 +135,17 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
     if verbose:
         emit_state("Finished with embedding..")
 
+    if community_information:        
+        partition_sizes = return_communities(graph)
+        for k,v in partition_sizes.items():
+            for res in results:
+                if res != None:
+                    res[1][k]*=v
+        
     if generate_edge_features != None:
         emit_state("Generating edge-based features")
-
-        ## TODO
-        ## select the pairwise composition function
-        ## for each pair of nodes, f(n1,n2) = E
-        ## edge labels are tuples of length 2
-        ## for constructed edge in edges, do: join
-
+        pass
+    
 
     if verbose:
         emit_state("Writing to output..")
