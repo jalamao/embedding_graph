@@ -9,6 +9,7 @@ from .graphlet_calculation import count_graphlets_orca
 import networkx as nx
 from collections import Counter
 
+## compute communities
 def return_communities(net):
 
     G = nx.Graph()
@@ -21,6 +22,7 @@ def return_communities(net):
     sizes = {k:cnts[v] for k,v in partitions.items()}
     return sizes
 
+## compute a page rank feature vector
 def pr_kernel(index_row):
     pr = page_rank(graph, [index_row], try_shrink=True)
     norm = np.linalg.norm(pr, 2)
@@ -29,32 +31,7 @@ def pr_kernel(index_row):
         return (index_row,pr)
     else:
         return None
-
-def hadamand_sum(embedding):
-
-    ## construct pairwise feature constructs, representing individual edges
-    ## return a map, containing index pair tuple, and a feature vector
     
-    pass
-
-def hadamand_prod():
-    pass
-
-def hadamand_L1():
-    pass
-
-def hadamand_L2():
-    pass
-    
-def csr_vappend(a,b):
-
-    ##  this is an effictient variation of vstack - for sparse result concatenation.
-    
-    a.data = np.hstack((a.data,b.data))
-    a.indices = np.hstack((a.indices,b.indices))
-    a.indptr = np.hstack((a.indptr,(b.indptr + a.nnz)[1:]))
-    a._shape = (a.shape[0]+b.shape[0],b.shape[1])
-    #return a
                 
 def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,embedding_file=None,target_file=None,from_mat=False, outfile=None,community_information=True,graphlet_binary="./orca"):
 
@@ -146,7 +123,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
         ## .......................
 
         graphlets = count_graphlets_orca(graph,graphlet_binary)
-        ## do the dot product between graphlets and the current results
+        ## do the hadamant product between graphlets and the current results
         
         for res in results:
             if res != None:

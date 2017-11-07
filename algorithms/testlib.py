@@ -68,7 +68,8 @@ def test_classification(graph,delimiter):
     v = OneVsRestClassifier(v)
 
     batch = 0
-    scores = []
+    scores_micro = []
+    scores_macro = []    
     threshold = 0.5
 
     scaler = preprocessing.StandardScaler()
@@ -84,15 +85,17 @@ def test_classification(graph,delimiter):
         model_preds = v.fit(train_X,train_Y).predict_proba(test_X)
         model_preds[model_preds > threshold] = 1
         model_preds[model_preds <= threshold] = 0
-        sc = f1_score(test_Y, model_preds, average='micro')
-        scores.append(sc)
+        sc_micro = f1_score(test_Y, model_preds, average='micro')
+        sc_macro = f1_score(test_Y, model_preds, average='macro')
+        scores_micro.append(sc_micro)
+        scores_macro.append(sc_macro)
             
-    results.append(("LR, t:{}".format(str(threshold)),np.mean(scores)))
+    results.append(("LR, t:{}".format(str(threshold)),np.mean(scores_micro),np.mean(scores_macro)))
 
     results= sorted(results, key=lambda tup: tup[1])
     for x in results:
-        cls, score = x
-        print("Classifier: {} performed with score of {}".format(cls,score))
+        cls, score_mi,score_ma = x
+        print("Classifier: {} performed with micro F1 score {} and macro F1 score {}".format(cls,score_mi,score_ma))
 
     print("Finished test - classification basic")
 
