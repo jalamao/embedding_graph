@@ -60,7 +60,7 @@ def test_classification(graph,delimiter):
 
     ## 10 splits 50% train
     
-    rs = ShuffleSplit(5, test_size=0.5,random_state=42)
+    rs = ShuffleSplit(10, test_size=0.5,random_state=42)
             
     results = []
 
@@ -89,10 +89,9 @@ def test_classification(graph,delimiter):
         sc_macro = f1_score(test_Y, model_preds, average='macro')
         scores_micro.append(sc_micro)
         scores_macro.append(sc_macro)
-            
     results.append(("LR, t:{}".format(str(threshold)),np.mean(scores_micro),np.mean(scores_macro)))
 
-    results= sorted(results, key=lambda tup: tup[1])
+    results = sorted(results, key=lambda tup: tup[1])
     for x in results:
         cls, score_mi,score_ma = x
         print("Classifier: {} performed with micro F1 score {} and macro F1 score {}".format(cls,score_mi,score_ma))
