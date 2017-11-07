@@ -56,7 +56,7 @@ def csr_vappend(a,b):
     a._shape = (a.shape[0]+b.shape[0],b.shape[1])
     #return a
                 
-def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,embedding_file=None,target_file=None,from_mat=False, outfile=None,community_information=True,graphlet_binary="./orca"):
+def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,embedding_file=None,target_file=None,from_mat=False, outfile=None,community_information=False,graphlet_binary="./orca"):
 
     if verbose:
         emit_state("Beginning embedding process..")
@@ -154,7 +154,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
         
         for res in results:
             if res != None:
-                res[1][:] = np.add(res[1],graphlets)
+                res[1][:] = np.multiply(res[1],graphlets)
         
         
         
