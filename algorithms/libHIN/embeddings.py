@@ -56,7 +56,7 @@ def csr_vappend(a,b):
     a._shape = (a.shape[0]+b.shape[0],b.shape[1])
     #return a
                 
-def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,embedding_file=None,target_file=None,from_mat=False, outfile=None,community_information=False,graphlet_binary="./orca"):
+def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,embedding_file=None,target_file=None,from_mat=False, outfile=None,community_information=True,graphlet_binary="./orca"):
 
     if verbose:
         emit_state("Beginning embedding process..")
@@ -136,8 +136,31 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
     if verbose:
         emit_state("Finished with embedding..")
 
+
+    if graphlet_binary != False:
+
+        ## .......................
+        ## .......................
+        ## local topology
+        ## .......................
+        ## .......................
+
+        graphlets = count_graphlets_orca(graph,graphlet_binary)
+        ## do the dot product between graphlets and the current results
+        
+        for res in results:
+            if res != None:
+                res[1][:] = np.multiply(res[1],graphlets)
+
+                
     if community_information:
 
+        ## .......................
+        ## .......................
+        ## global topology
+        ## .......................
+        ## .......................
+        
         if verbose:
             emit_state("Mapping the community information..")
         
@@ -146,17 +169,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
             for res in results:
                 if res != None:
                     res[1][k]*=v
-
-    if graphlet_binary != None:
-
-        graphlets = count_graphlets_orca(graph,graphlet_binary)
-        ## do the dot product between graphlets and the current results
-        
-        for res in results:
-            if res != None:
-                res[1][:] = np.multiply(res[1],graphlets)
-        
-        
+                
         
     if generate_edge_features != None:
         emit_state("Generating edge-based features")

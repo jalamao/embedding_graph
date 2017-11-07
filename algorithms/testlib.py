@@ -32,7 +32,7 @@ def test_classification(graph,delimiter):
     if ".mat" in graph:
         example_net = load_hinmine_object(graph,delimiter) ## add support for weight
         embedding = hinmine_embedding(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=True)
-    else:
+    else:        
         embedding = decompose_test(graph,"---")
 
     print("Trainset dimension {}, testset dimension {}.".format(embedding['data'].shape,embedding['targets'].shape))
@@ -56,6 +56,7 @@ def test_classification(graph,delimiter):
     from sklearn.cross_validation import StratifiedShuffleSplit
     from sklearn.model_selection import ShuffleSplit
     import scipy.io as spi
+    from sklearn import preprocessing
 
     ## 10 splits 50% train
     
@@ -69,13 +70,16 @@ def test_classification(graph,delimiter):
     batch = 0
     scores = []
     threshold = 0.5
-    
+
+    scaler = preprocessing.StandardScaler()
+
     for train_index, test_index in rs.split(embedding['targets']):
         batch += 1
         print("Fold: {}".format(batch))
-        train_X = embedding['data'][train_index]
+        transformer = scaler.fit(embedding['data'][train_index])
+        train_X = transformer.transform(embedding['data'][train_index])
         train_Y = embedding['targets'][train_index]
-        test_X = embedding['data'][test_index]
+        test_X = transformer.transform(embedding['data'][test_index])
         test_Y = embedding['targets'][test_index]
         model_preds = v.fit(train_X,train_Y).predict_proba(test_X)
         model_preds[model_preds > threshold] = 1
