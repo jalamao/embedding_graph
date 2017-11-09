@@ -32,7 +32,7 @@ def count_graphlets_orca(graph,binary):
     matf = np.loadtxt(out_graph,delimiter=" ")
     call(["rm","-rf","tmp"])
     print("Finished graphlet counting:",matf.shape)
-    return np.sum(matf/np.amax(matf),axis=1)
+    return matf
 
 
 if __name__ == "__main__":

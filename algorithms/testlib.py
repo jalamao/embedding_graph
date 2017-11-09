@@ -1,12 +1,21 @@
 ## this tests the libHIN
 
 from libHIN.IO import load_hinmine_object, generate_cv_folds  ## gml_parser
-from libHIN.embeddings import hinmine_embedding_pr ## basic embedding
+from libHIN.embeddings import hinmine_embedding_pr, hinmine_embedding_gp ## basic embedding
 from libHIN.decomposition import * ## basic embedding
 from dataloaders import read_rfa, read_bitcoin, read_web
 from libHIN.label_propagation import *
 import networkx as nx
 import numpy as np
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.cross_validation import StratifiedShuffleSplit
+from sklearn.model_selection import ShuffleSplit
+import scipy.io as spi
+from sklearn import preprocessing
 
 def decompose_test(fname, delim):
 
@@ -26,6 +35,68 @@ def decompose_test(fname, delim):
         
     return embedding
 
+
+def test_graphlet_classification(graph, delimiter):
+
+    if ".mat" in graph:
+        example_net = load_hinmine_object(graph,delimiter) ## add support for weight
+        embedding = hinmine_embedding_gp(example_net,verbose=True,use_decomposition=False,from_mat=True)
+    else:        
+            example_net = load_hinmine_object(graph,"---") ## add support for weight
+    
+            ## split and re-weight
+            print("Beginning decomposition..")
+
+            decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None, parallel=True)
+    
+            ## embedding
+            print("Starting embedding..")
+            embedding = hinmine_embedding_gp(decomposed,verbose=True)
+
+            
+    print("Trainset dimension {}, testset dimension {}.".format(embedding['data'].shape,embedding['targets'].shape))
+
+    rs = ShuffleSplit(10, test_size=0.5,random_state=42)
+    
+    results = []
+
+    v = LogisticRegression(penalty="l2")
+    v = OneVsRestClassifier(v)
+
+    batch = 0
+
+    threshold = embedding['decision_threshold']
+
+    scores_micro = []
+    scores_macro = []
+    
+    for train_index, test_index in rs.split(embedding['targets']):
+        
+        batch += 1        
+        print("Fold: {}".format(batch))
+        train_X = embedding['data'][train_index]
+        train_Y = embedding['targets'][train_index]
+        test_X = embedding['data'][test_index]
+        test_Y = embedding['targets'][test_index]
+        model_preds = v.fit(train_X,train_Y).predict_proba(test_X)
+        model_preds[model_preds > threshold] = 1
+        model_preds[model_preds <= threshold] = 0
+        sc_micro = f1_score(test_Y, model_preds, average='micro')
+        sc_macro = f1_score(test_Y, model_preds, average='macro')
+        scores_micro.append(sc_micro)
+        scores_macro.append(sc_macro)
+        
+    results.append(("LR, t:{}".format(str(threshold)),np.mean(scores_micro),np.mean(scores_macro)))
+
+    results = sorted(results, key=lambda tup: tup[2])
+    
+    for x in results:
+        cls, score_mi, score_ma = x
+        print("Classifier: {} performed with micro F1 score {} and macro F1 score {}".format(cls,score_mi,score_ma))
+
+    print("Finished test - graphlet-based classification basic")
+    
+
 def test_classification(graph,delimiter):
     
     ## direct decomposition
@@ -38,17 +109,6 @@ def test_classification(graph,delimiter):
 
     print("Trainset dimension {}, testset dimension {}.".format(embedding['data'].shape,embedding['targets'].shape))
 
-    from sklearn.multiclass import OneVsRestClassifier
-    from sklearn.model_selection import train_test_split
-    from sklearn.metrics import f1_score
-    from sklearn.metrics import accuracy_score
-    from sklearn.linear_model import LogisticRegression
-
-
-    from sklearn.cross_validation import StratifiedShuffleSplit
-    from sklearn.model_selection import ShuffleSplit
-    import scipy.io as spi
-    from sklearn import preprocessing
 
     ## 10 splits 50% train
     
@@ -272,6 +332,7 @@ if __name__ == "__main__":
     parser.add_argument("--test_rnn")
     parser.add_argument("--frommat")
     parser.add_argument("--test_write")
+    parser.add_argument("--test_graphlet")
     
     args = parser.parse_args()
 
@@ -295,3 +356,7 @@ if __name__ == "__main__":
         
     if args.test_write:
         test_writing(args.graph, " ","test.emb")
+
+    if args.test_graphlet:
+        test_graphlet_classification(args.graph,args.delimiter)
+        

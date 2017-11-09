@@ -55,15 +55,15 @@ def pr_kernel(index_row):
         return None
 
 
-def generate_deep_embedding(X):    
+def generate_deep_embedding(X, depth=1):    
     
     from keras.layers import Input, Dense
     from keras.models import Model
 
 #    X = X.todense()
 
-    i_shape = int(X.shape[0])
-    encoding_dim = int(X.shape[0]/2)
+    i_shape = int(X.shape[1])
+    encoding_dim = int(X.shape[1]/2)
     
     # this is our input placeholder
     input_img = Input(shape=(i_shape,))
@@ -89,7 +89,7 @@ def generate_deep_embedding(X):
 
 def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose=False,generate_edge_features = None, from_mat=False,outfile=None,graphlet_binary="./orca",deep_embedding=True):
 
-    ## tukaj probamo deepGL
+    assert isinstance(hin, HeterogeneousInformationNetwork)
     
     if use_decomposition:
         if verbose:
@@ -126,13 +126,19 @@ def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose
     ## .......................
     ## .......................
 
+    from sklearn.preprocessing import PolynomialFeatures
+    
     graphlets = count_graphlets_orca(graph,graphlet_binary)
-    graph = generate_deep_embedding(graphlets)
+
+    ## for level in levels concatenate
+
+    for j in range(4): ## how many recursive embeddings
+        deeper_level = generate_deep_embedding(graphlets)
+        graphlets = np.concatenate((graphlets,deeper_level),axis=1)
     
-    ## transform this matrix into train/test.
-    ## TBA
+    ## tukaj nekaj naredi s to matriko, enrich it.    
     
-    pass
+    return {'data' : graphlets,'targets' : hin.label_matrix, 'decision_threshold' : 0.5}
 
     
 def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,from_mat=False, outfile=None,feature_permutator_first="0000",deep_embedding=False):
