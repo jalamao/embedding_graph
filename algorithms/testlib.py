@@ -52,7 +52,7 @@ def test_classification(graph,delimiter):
 
     ## 10 splits 50% train
     
-    rs = ShuffleSplit(3, test_size=0.5,random_state=42)
+    rs = ShuffleSplit(10, test_size=0.5,random_state=42)
     
     results = []
 
