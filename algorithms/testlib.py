@@ -1,7 +1,7 @@
 ## this tests the libHIN
 
 from libHIN.IO import load_hinmine_object, generate_cv_folds  ## gml_parser
-from libHIN.embeddings import hinmine_embedding ## basic embedding
+from libHIN.embeddings import hinmine_embedding_pr ## basic embedding
 from libHIN.decomposition import * ## basic embedding
 from dataloaders import read_rfa, read_bitcoin, read_web
 from libHIN.label_propagation import *
@@ -21,7 +21,7 @@ def decompose_test(fname, delim):
     
     ## embedding
     print("Starting embedding..")
-    embedding = hinmine_embedding(decomposed, parallel=True,verbose=True)
+    embedding = hinmine_embedding_pr(decomposed, parallel=True,verbose=True)
     print(embedding['data'].shape,embedding['targets'].shape)
         
     return embedding
@@ -31,7 +31,7 @@ def test_classification(graph,delimiter):
     ## direct decomposition
     if ".mat" in graph:
         example_net = load_hinmine_object(graph,delimiter) ## add support for weight
-        embedding = hinmine_embedding(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=True)
+        embedding = hinmine_embedding_pr(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=True)
     else:        
         embedding = decompose_test(graph,"---")
 
@@ -60,7 +60,7 @@ def test_classification(graph,delimiter):
     ## 10 splits 50% train
     
     rs = ShuffleSplit(3, test_size=0.5,random_state=42)
-            
+    
     results = []
 
     v = LogisticRegression(penalty="l2")
@@ -68,35 +68,34 @@ def test_classification(graph,delimiter):
 
     batch = 0
 
-    threshold = 0.1
+    threshold = 0.5
     
     sel = preprocessing.StandardScaler()
 
     scores_micro = []
     scores_macro = []
     
-    for threshold in np.arange(0,0.6,0.05):
-        for train_index, test_index in rs.split(embedding['targets']):
-
-            batch += 1
-            transformer = sel.fit(embedding['data'][train_index])
+    for train_index, test_index in rs.split(embedding['targets']):
         
-            print("Fold: {}".format(batch))
-            train_X = embedding['data'][train_index]
-            train_Y = embedding['targets'][train_index]
-            test_X = embedding['data'][test_index]
-            test_Y = embedding['targets'][test_index]
-            model_preds = v.fit(train_X,train_Y).predict_proba(test_X)
-            model_preds[model_preds > threshold] = 1
-            model_preds[model_preds <= threshold] = 0
-            sc_micro = f1_score(test_Y, model_preds, average='micro')
-            sc_macro = f1_score(test_Y, model_preds, average='macro')
-            scores_micro.append(sc_micro)
-            scores_macro.append(sc_macro)
+        batch += 1
+        transformer = sel.fit(embedding['data'][train_index])
         
-        results.append(("LR, t:{}".format(str(threshold)),np.mean(scores_micro),np.mean(scores_macro)))
+        print("Fold: {}".format(batch))
+        train_X = embedding['data'][train_index]
+        train_Y = embedding['targets'][train_index]
+        test_X = embedding['data'][test_index]
+        test_Y = embedding['targets'][test_index]
+        model_preds = v.fit(train_X,train_Y).predict_proba(test_X)
+        model_preds[model_preds > threshold] = 1
+        model_preds[model_preds <= threshold] = 0
+        sc_micro = f1_score(test_Y, model_preds, average='micro')
+        sc_macro = f1_score(test_Y, model_preds, average='macro')
+        scores_micro.append(sc_micro)
+        scores_macro.append(sc_macro)
+        
+    results.append(("LR, t:{}".format(str(threshold)),np.mean(scores_micro),np.mean(scores_macro)))
 
-    results = sorted(results, key=lambda tup: tup[1])
+    results = sorted(results, key=lambda tup: tup[2])
     
     for x in results:
         cls, score_mi, score_ma = x
@@ -139,7 +138,12 @@ def test_rnn(graph, delimiter):
     from keras.layers import Dense, Dropout
     from sklearn.model_selection import KFold
     from sklearn.metrics import f1_score
-    embedding = decompose_test(graph,delimiter)
+    if ".mat" in graph:
+        example_net = load_hinmine_object(graph,delimiter) ## add support for weight
+        embedding = hinmine_embedding_pr(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=True)
+    else:        
+        embedding = decompose_test(graph,"---")
+        
     cvscores = []
 
     X = embedding['data']
@@ -174,7 +178,7 @@ def test_embedding_raw():
 
     ## test simple embedding
     simple_net = load_hinmine_object("../data/example_weighted.txt", targets=False) ## embed only
-    embedding = hinmine_embedding(simple_net,use_decomposition=False, parallel=8,verbose=True)
+    embedding = hinmine_embedding_pr(simple_net,use_decomposition=False, parallel=8,verbose=True)
 
 def test_embedding_prediction():
     ## do embedding + prediction
@@ -194,7 +198,7 @@ def test_label_propagation():
 def test_writing(fname,delim,outname):
 
     example_net = load_hinmine_object(fname,delim) ## add support for weight
-    embedding = hinmine_embedding(example_net, parallel=True,verbose=True,use_decomposition=False,return_type="file",outfile=outname)
+    embedding = hinmine_embedding_pr(example_net, parallel=True,verbose=True,use_decomposition=False,return_type="file",outfile=outname)
     
     pass
 
@@ -203,7 +207,7 @@ def parse_mat(fname, delim):
 
     ## direct decomposition
     example_net = load_hinmine_object(fname,delim) ## add support for weight
-    embedding = hinmine_embedding(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=True)
+    embedding = hinmine_embedding_pr(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=True)
 
     print("Trainset dimension {}, testset dimension {}.".format(embedding['data'].shape,embedding['targets'].shape))
 
@@ -291,7 +295,7 @@ if __name__ == "__main__":
         test_automl(args.graph,args.delimiter)
         
     if args.test_rnn:
-        test_rnn(args.graph, "---")
+        test_rnn(args.graph, args.delimiter)
 
     if args.frommat:
         parse_mat(args.graph, " ")

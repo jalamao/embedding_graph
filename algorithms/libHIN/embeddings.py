@@ -53,9 +53,85 @@ def pr_kernel(index_row):
         return (index_row,pr)
     else:
         return None
+
+
+def generate_deep_embedding(X):    
     
-                
-def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,from_mat=False, outfile=None,feature_permutator_first="1000"):
+    from keras.layers import Input, Dense
+    from keras.models import Model
+
+#    X = X.todense()
+
+    i_shape = int(X.shape[0])
+    encoding_dim = int(X.shape[0]/2)
+    
+    # this is our input placeholder
+    input_img = Input(shape=(i_shape,))
+    mid_first = Dense(int(encoding_dim*1.5), activation='relu')(input_img)
+    encoded = Dense(encoding_dim, activation='relu')(mid_first)
+    mid_second = Dense(int(encoding_dim*1.5), activation='relu')(encoded)
+    decoded = Dense(i_shape, activation='sigmoid')(mid_second)
+
+    # this model maps an input to its reconstruction
+    autoencoder = Model(input_img, decoded)
+    encoder = Model(input_img, encoded)
+    autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
+    autoencoder.fit(X, X,
+                epochs=50,
+                batch_size=256,
+                shuffle=True,verbose=False)
+
+    X = encoder.predict(X)
+
+    print("Encoding complete, final shape:",X.shape)
+    return X
+
+def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose=False,generate_edge_features = None, from_mat=False,outfile=None,graphlet_binary="./orca",deep_embedding=True):
+
+    if use_decomposition:
+        if verbose:
+            emit_state("Using decomposed networks..")
+        n = hin.decomposed['decomposition'].shape[0]
+        graph = stochastic_normalization(hin.decomposed['decomposition'])
+    
+    else:
+
+        if from_mat:
+
+            graph = stochastic_normalization(hin.graph)
+            n = hin.graph.shape[0]
+            
+        else:
+            
+            if verbose:
+                emit_state("Using raw networks..")
+            
+            ## this works on a raw network.
+            n = len(hin.graph)
+            if hin.weighted != False:
+                converted = nx.to_scipy_sparse_matrix(hin.graph,weight=hin.weighted)
+            else:
+                converted = nx.to_scipy_sparse_matrix(hin.graph)
+
+            if verbose:
+                emit_state("Normalizing the adj matrix..")
+            graph = stochastic_normalization(converted) ## normalize
+
+    ## .......................
+    ## .......................
+    ## local topology - graphlets
+    ## .......................
+    ## .......................
+
+    graphlets = count_graphlets_orca(graph,graphlet_binary)
+    graph = generate_deep_embedding(graphlets)
+    
+    ## transform this matrix into train/test.
+    ## TBA
+    
+    pass
+    
+def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,from_mat=False, outfile=None,feature_permutator_first="0000",deep_embedding=False):
 
     # fc_operators = []
     
@@ -78,7 +154,6 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
     
     # embed the input network to a term matrix    
     assert isinstance(hin, HeterogeneousInformationNetwork)
-
 
     ## .......................
     ## Use decomposed network
@@ -122,7 +197,7 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
     ## Graph embedding part
     ## .......................
     ## .......................
-        
+    
     ## use parallel implementation of PR 
     if parallel:        
         import mkl
@@ -147,20 +222,6 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
         
     if verbose:
         emit_state("Finished with embedding..")
-
-
-    # if graphlet_binary != False:
-
-    #     ## .......................
-    #     ## .......................
-    #     ## local topology - graphlets
-    #     ## .......................
-    #     ## .......................
-
-    #     graphlets = count_graphlets_orca(graph,graphlet_binary)
-    #     for res in results:
-    #         if res != None:
-    #             res[1][:] = np.multiply(res[1],graphlets)
 
                 
     if operator_map["community_information"]:
@@ -256,6 +317,8 @@ def hinmine_embedding(hin,use_decomposition=True, parallel=True,return_type="mat
                 else:
                     vectors[pr_vector[0],:] = pr_vector[1]
 
+        if deep_embedding:
+            vectors = generate_deep_embedding(vectors)
                     
         return {'data' : vectors,'targets' : hin.label_matrix}
 
