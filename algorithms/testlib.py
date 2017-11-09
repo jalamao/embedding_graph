@@ -27,8 +27,9 @@ def decompose_test(fname, delim):
     return embedding
 
 def test_classification(graph,delimiter):
-
+    
     ## direct decomposition
+    
     if ".mat" in graph:
         example_net = load_hinmine_object(graph,delimiter) ## add support for weight
         embedding = hinmine_embedding_pr(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=True)
@@ -37,20 +38,12 @@ def test_classification(graph,delimiter):
 
     print("Trainset dimension {}, testset dimension {}.".format(embedding['data'].shape,embedding['targets'].shape))
 
-    from sklearn.ensemble import RandomForestClassifier
     from sklearn.multiclass import OneVsRestClassifier
-    from sklearn.dummy import DummyClassifier
     from sklearn.model_selection import train_test_split
     from sklearn.metrics import f1_score
     from sklearn.metrics import accuracy_score
-    from sklearn.naive_bayes import GaussianNB
-    from sklearn.ensemble import AdaBoostClassifier
-    from sklearn.neural_network import MLPClassifier
-    from sklearn.svm import LinearSVC
-    from sklearn.neighbors import KNeighborsClassifier
     from sklearn.linear_model import LogisticRegression
-    from sklearn.naive_bayes import BernoulliNB
-    from sklearn import svm
+
 
     from sklearn.cross_validation import StratifiedShuffleSplit
     from sklearn.model_selection import ShuffleSplit
@@ -68,7 +61,7 @@ def test_classification(graph,delimiter):
 
     batch = 0
 
-    threshold = 0.5
+    threshold = embedding['decision_threshold']
     
     sel = preprocessing.StandardScaler()
 

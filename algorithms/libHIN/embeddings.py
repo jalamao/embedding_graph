@@ -86,8 +86,11 @@ def generate_deep_embedding(X):
     print("Encoding complete, final shape:",X.shape)
     return X
 
+
 def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose=False,generate_edge_features = None, from_mat=False,outfile=None,graphlet_binary="./orca",deep_embedding=True):
 
+    ## tukaj probamo deepGL
+    
     if use_decomposition:
         if verbose:
             emit_state("Using decomposed networks..")
@@ -130,6 +133,7 @@ def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose
     ## TBA
     
     pass
+
     
 def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,from_mat=False, outfile=None,feature_permutator_first="0000",deep_embedding=False):
 
@@ -260,7 +264,7 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
         
         ## .......................
         ## .......................
-        ## global topology - basic clustering
+        ## global topology - centrality
         ## .......................
         ## .......................
         
@@ -317,10 +321,54 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
                 else:
                     vectors[pr_vector[0],:] = pr_vector[1]
 
+        from sklearn.linear_model import SGDClassifier
+        from sklearn.model_selection import ShuffleSplit
+        from sklearn.multiclass import OneVsRestClassifier
+        from sklearn.metrics import f1_score
+        
         if deep_embedding:
             vectors = generate_deep_embedding(vectors)
-                    
-        return {'data' : vectors,'targets' : hin.label_matrix}
+        
+        v = SGDClassifier(loss="log", penalty="l2")
+        v = OneVsRestClassifier(v)
+        
+        pre_split = ShuffleSplit(1, test_size=0.1,random_state=43)
+        rs = ShuffleSplit(5, test_size=0.5,random_state=42)
+
+        for x,y in pre_split.split(hin.label_matrix):
+
+            parameter_data = vectors[y]
+            parameter_target = hin.label_matrix[y]
+
+        batch=0
+
+        cmax = [0,0] ## optimization criterion
+        current_optimum = 0.5 ## default
+        
+        for threshold in np.arange(0,0.55,0.05):            
+            for train_index, test_index in rs.split(parameter_target):
+        
+                batch += 1
+                if verbose:
+                    print("Training fold: {}, current_optimum: {}".format(batch, current_optimum))
+                
+                ## do the splits
+                train_X = parameter_data[train_index]
+                train_Y = parameter_target[train_index]
+                test_X = parameter_data[test_index]
+                test_Y = parameter_target[test_index]
+            
+                model_preds = v.fit(train_X,train_Y).predict_proba(test_X)
+                model_preds[model_preds > threshold] = 1
+                model_preds[model_preds <= threshold] = 0
+                sc_micro = f1_score(test_Y, model_preds, average='micro')
+                sc_macro = f1_score(test_Y, model_preds, average='macro')
+
+                if sc_micro > cmax[0] and sc_macro > cmax[1]:
+                    current_optimum = threshold
+        
+                
+        return {'data' : vectors,'targets' : hin.label_matrix, 'decision_threshold' : current_optimum}
 
     
     elif return_type == "file":
