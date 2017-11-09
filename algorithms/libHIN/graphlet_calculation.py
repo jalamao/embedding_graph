@@ -10,6 +10,9 @@ def count_graphlets_orca(graph,binary):
 
     ## get the graph..
     G = nx.from_scipy_sparse_matrix(graph)
+    for e in G.edges():
+        if e[0] == e[1]:
+            G.remove_edge(e[0],e[0])
     
     if not os.path.exists("tmp"):
         os.makedirs("tmp")

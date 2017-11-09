@@ -39,8 +39,8 @@ def decompose_test(fname, delim):
 def test_graphlet_classification(graph, delimiter):
 
     if ".mat" in graph:
-        example_net = load_hinmine_object(graph,delimiter) ## add support for weight
-        embedding = hinmine_embedding_gp(example_net,verbose=True,use_decomposition=False,from_mat=True)
+        example_net = load_hinmine_object(graph, delimiter) ## add support for weight
+        embedding = hinmine_embedding_gp(example_net, verbose=True, use_decomposition=False, from_mat=True)
     else:        
             example_net = load_hinmine_object(graph,"---") ## add support for weight
     

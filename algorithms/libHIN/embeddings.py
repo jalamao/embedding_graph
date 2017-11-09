@@ -59,21 +59,21 @@ def generate_deep_embedding(X, depth=1):
     
     from keras.layers import Input, Dense
     from keras.models import Model
-
-#    X = X.todense()
+    from keras import regularizers
 
     i_shape = int(X.shape[1])
     encoding_dim = int(X.shape[1]/2)
     
     # this is our input placeholder
-    input_img = Input(shape=(i_shape,))
-    mid_first = Dense(int(encoding_dim*1.5), activation='relu')(input_img)
-    encoded = Dense(encoding_dim, activation='relu')(mid_first)
-    mid_second = Dense(int(encoding_dim*1.5), activation='relu')(encoded)
-    decoded = Dense(i_shape, activation='sigmoid')(mid_second)
+    input_matrix = Input(shape=(i_shape,))
+#    mid_first = Dense(int(encoding_dim*1.5), activation='relu')(input_img)
+    encoded = Dense(encoding_dim, activation='relu',
+                    activity_regularizer=regularizers.l1(10e-5))(input_matrix)
+#    mid_second = Dense(int(encoding_dim*1.5), activation='relu')(encoded)
+    decoded = Dense(i_shape, activation='sigmoid')(encoded)
 
     # this model maps an input to its reconstruction
-    autoencoder = Model(input_img, decoded)
+    autoencoder = Model(input_matrix, decoded)
     encoder = Model(input_img, encoded)
     autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
     autoencoder.fit(X, X,
@@ -83,7 +83,8 @@ def generate_deep_embedding(X, depth=1):
 
     X = encoder.predict(X)
 
-    print("Encoding complete, final shape:",X.shape)
+    print("Encoding stage complete, current shape: {}".format(X.shape))
+    
     return X
 
 
@@ -100,8 +101,7 @@ def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose
     else:
 
         if from_mat:
-
-            graph = stochastic_normalization(hin.graph)
+            graph = hin.graph
             n = hin.graph.shape[0]
             
         else:
