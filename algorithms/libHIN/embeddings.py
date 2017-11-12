@@ -55,37 +55,42 @@ def pr_kernel(index_row):
         return None
 
 
-def generate_deep_embedding(X, depth=1):    
+def generate_deep_embedding(X,target, depth=2):    
     
     from keras.layers import Input, Dense
     from keras.models import Model
     from keras import regularizers
 
     i_shape = int(X.shape[1])
-    encoding_dim = int(X.shape[1]/2)
+    o_shape = int(target.shape[1])
+
+    encoding_dim = int(X.shape[1]/depth)
     
     # this is our input placeholder
     input_matrix = Input(shape=(i_shape,))
-#    mid_first = Dense(int(encoding_dim*1.5), activation='relu')(input_img)
     encoded = Dense(encoding_dim, activation='relu',
                     activity_regularizer=regularizers.l1(10e-5))(input_matrix)
-#    mid_second = Dense(int(encoding_dim*1.5), activation='relu')(encoded)
-    decoded = Dense(i_shape, activation='sigmoid')(encoded)
+    decoded = Dense(o_shape, activation='sigmoid')(encoded)
 
     # this model maps an input to its reconstruction
     autoencoder = Model(input_matrix, decoded)
-    encoder = Model(input_img, encoded)
+    encoder = Model(input_matrix, encoded)
     autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
-    autoencoder.fit(X, X,
-                epochs=50,
-                batch_size=256,
-                shuffle=True,verbose=False)
+
+    print("finished compilation")    
+
+    autoencoder.fit(X, target,
+                    epochs=50,
+                    batch_size=256,
+                    shuffle=True,
+                    verbose=False)
+
 
     X = encoder.predict(X)
 
     print("Encoding stage complete, current shape: {}".format(X.shape))
     
-    return X
+    return (X,encoder)
 
 
 def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose=False,generate_edge_features = None, from_mat=False,outfile=None,graphlet_binary="./orca",deep_embedding=True):
@@ -126,21 +131,35 @@ def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose
     ## .......................
     ## .......................
 
-    from sklearn.preprocessing import PolynomialFeatures
-    
+    ## raw data - initial setup
     graphlets = count_graphlets_orca(graph,graphlet_binary)
+    targets = hin.label_matrix.todense() ## convert targets to dense representation..
 
-    ## for level in levels concatenate
+    from sklearn.model_selection import train_test_split
 
-    for j in range(4): ## how many recursive embeddings
-        deeper_level = generate_deep_embedding(graphlets)
-        graphlets = np.concatenate((graphlets,deeper_level),axis=1)
+    ## train on small percent of the data
+    X_train, X_test, y_train, y_test = train_test_split(graphlets, targets, test_size=0.1, random_state=42)
     
-    ## tukaj nekaj naredi s to matriko, enrich it.    
+    autoencoders = []    ## model container
     
+    print("Beginning with recursive embeddings..")
+    
+    for j in range(15): ## how many recursive embeddings
+        deeper_level_embedding, encoder = generate_deep_embedding(X_test, y_test)
+        autoencoders.append(encoder)
+        X_test = np.concatenate((X_test,deeper_level_embedding),axis=1)
+
+    ## encript the rest of the data
+    print("Applying {} autoencoders..".format(len(autoencoders)))
+
+    ## use trained autoencoders
+    for enc in autoencoders:
+        encoding = enc.predict(graphlets)
+        graphlets = np.concatenate((graphlets,encoding), axis=1)
+
+    print("Final shape:{}".format(graphlets.shape))
     return {'data' : graphlets,'targets' : hin.label_matrix, 'decision_threshold' : 0.5}
 
-    
 def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,from_mat=False, outfile=None,feature_permutator_first="0000",deep_embedding=False):
 
     # fc_operators = []
@@ -334,47 +353,13 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
         
         if deep_embedding:
             vectors = generate_deep_embedding(vectors)
-        
-        v = SGDClassifier(loss="log", penalty="l2")
-        v = OneVsRestClassifier(v)
-        
-        pre_split = ShuffleSplit(1, test_size=0.1,random_state=43)
-        rs = ShuffleSplit(5, test_size=0.5,random_state=42)
 
-        for x,y in pre_split.split(hin.label_matrix):
-
-            parameter_data = vectors[y]
-            parameter_target = hin.label_matrix[y]
-
-        batch=0
-
-        cmax = [0,0] ## optimization criterion
-        current_optimum = 0.5 ## default
-        
-        for threshold in np.arange(0,0.55,0.05):            
-            for train_index, test_index in rs.split(parameter_target):
-        
-                batch += 1
-                if verbose:
-                    print("Training fold: {}, current_optimum: {}".format(batch, current_optimum))
-                
-                ## do the splits
-                train_X = parameter_data[train_index]
-                train_Y = parameter_target[train_index]
-                test_X = parameter_data[test_index]
-                test_Y = parameter_target[test_index]
+        try:
+            hin.label_matrix = hin.label_matrix.todense()
+        except:
+            pass
             
-                model_preds = v.fit(train_X,train_Y).predict_proba(test_X)
-                model_preds[model_preds > threshold] = 1
-                model_preds[model_preds <= threshold] = 0
-                sc_micro = f1_score(test_Y, model_preds, average='micro')
-                sc_macro = f1_score(test_Y, model_preds, average='macro')
-
-                if sc_micro > cmax[0] and sc_macro > cmax[1]:
-                    current_optimum = threshold
-        
-                
-        return {'data' : vectors,'targets' : hin.label_matrix, 'decision_threshold' : current_optimum}
+        return {'data' : vectors,'targets' : hin.label_matrix}
 
     
     elif return_type == "file":

@@ -4,6 +4,7 @@ from libHIN.IO import load_hinmine_object, generate_cv_folds  ## gml_parser
 from libHIN.embeddings import hinmine_embedding_pr, hinmine_embedding_gp ## basic embedding
 from libHIN.decomposition import * ## basic embedding
 from dataloaders import read_rfa, read_bitcoin, read_web
+from collections import defaultdict
 from libHIN.label_propagation import *
 import networkx as nx
 import numpy as np
@@ -16,6 +17,8 @@ from sklearn.cross_validation import StratifiedShuffleSplit
 from sklearn.model_selection import ShuffleSplit
 import scipy.io as spi
 from sklearn import preprocessing
+
+from libHIN.deep_models import *
 
 def decompose_test(fname, delim):
 
@@ -35,6 +38,55 @@ def decompose_test(fname, delim):
         
     return embedding
 
+
+def test_deep_pr_classification(graph,delimiter):
+    
+    if ".mat" in graph:
+        example_net = load_hinmine_object(graph,delimiter) ## add support for weight
+        embedding = hinmine_embedding_pr(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=True)
+    else:        
+        embedding = decompose_test(graph,"---")
+    print("Trainset dimension {}, testset dimension {}.".format(embedding['data'].shape,embedding['targets'].shape))
+
+    ##### learn #####
+    
+    rs = ShuffleSplit(10, test_size=0.5,random_state=42)
+    batch = 0        
+    threshold = 0.
+    models_results = defaultdict(list)
+    
+    for train_index, test_index in rs.split(embedding['targets']):
+        
+        batch += 1        
+        print("Fold: {}".format(batch))
+                       
+        train_X = embedding['data'][train_index]
+        train_Y = embedding['targets'][train_index]
+        test_X = embedding['data'][test_index]
+        test_Y = embedding['targets'][test_index]
+
+        ## for m in models...
+
+        model = baseline_dense_model(train_X, train_Y)
+        preds = model.predict(test_X)
+        preds[preds>=threshold] = 1
+        preds[preds<threshold] =  0
+        sc_micro = f1_score(test_Y, preds, average='micro')
+        sc_macro = f1_score(test_Y, preds, average='macro')
+        models_results[ids].append((sc_micro,sc_macro))
+                    
+    for k,v in models_results.items():
+
+        micros = []
+        macros = []
+        for x,y in v:
+            micros.append(x)
+            macros.append(y)
+
+        print("Model: {} micro: {} macro: {}".format(k,np.mean(micros),np.mean(macros)))
+    
+    print("Finished test - deep learning..")
+            
 
 def test_graphlet_classification(graph, delimiter):
 
@@ -333,6 +385,7 @@ if __name__ == "__main__":
     parser.add_argument("--frommat")
     parser.add_argument("--test_write")
     parser.add_argument("--test_graphlet")
+    parser.add_argument("--e2edl")
     
     args = parser.parse_args()
 
@@ -359,4 +412,7 @@ if __name__ == "__main__":
 
     if args.test_graphlet:
         test_graphlet_classification(args.graph,args.delimiter)
+
+    if args.e2edl:
+        test_deep_pr_classification(args.graph,args.delimiter)
         
