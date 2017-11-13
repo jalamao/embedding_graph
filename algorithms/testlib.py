@@ -67,7 +67,7 @@ def test_deep_pr_classification(graph,delimiter):
 
         ## for m in models...
 
-        model = baseline_dense_model(train_X, train_Y)
+        model = baseline_dense_model(train_X, train_Y,vtag=0)
         preds = model.predict(test_X)
         preds[preds>=threshold] = 1
         preds[preds<threshold] =  0

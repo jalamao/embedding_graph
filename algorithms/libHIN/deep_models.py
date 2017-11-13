@@ -4,6 +4,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Input
 from keras.models import Model
 from keras import regularizers
+from keras.layers.recurrent import LSTM
 
 def baseline_dense_model(X, Y, vtag=2):
 
@@ -19,9 +20,12 @@ def baseline_dense_model(X, Y, vtag=2):
     model.add(Dense(layer_first, activation='relu'))
     model.add(Dropout(0.1))
     model.add(Dense(layer_second,activation='relu'))
-    model.add(Dropout(0.1))
     model.add(Dense(layer_third,activation='relu'))
     model.add(Dropout(0.1))
+    model.add(Dense(layer_third,activation='relu'))
+    model.add(Dense(layer_fourth,activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(LSTM(100))
     model.add(Dense(layer_fourth,activation='relu'))
     model.add(Dropout(0.1))
     model.add(Dense(outshape, activation='sigmoid'))
