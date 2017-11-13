@@ -89,8 +89,15 @@ def autoencoder_model(X, Y):
 
     
 
-def convolutional_model(X,Y):
+def convolutional_model(X, Y):
 
     ## do 1D convolutions
+    ## this is less intense
+    
+    pass
 
+def convolutional_ae_model(X, Y):
+
+    ## first auto-encode the data, then do convolutions
+    
     pass
