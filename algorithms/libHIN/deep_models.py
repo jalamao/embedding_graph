@@ -5,7 +5,7 @@ from keras.layers import Dense, Dropout, Input
 from keras.models import Model
 from keras import regularizers
 
-def baseline_dense_model(X, Y):
+def baseline_dense_model(X, Y, vtag=2):
 
     inshape = int(X.shape[1])
     outshape = int(Y.shape[1])
@@ -30,12 +30,12 @@ def baseline_dense_model(X, Y):
     model.compile(loss='binary_crossentropy', optimizer='adam')
 
     # Fit the model
-    model.fit(X, Y, epochs=300, batch_size=60, verbose=0)
+    model.fit(X, Y, epochs=300, batch_size=60, verbose=vtag)
 
     return model
 
 
-def autoencoder_model(X, Y):
+def autoencoder_model(X, Y,vtag=2):
 
     inshape = int(X.shape[1])
     outshape = int(Y.shape[1])
@@ -57,7 +57,7 @@ def autoencoder_model(X, Y):
                     epochs=300,
                     batch_size=80,
                     shuffle=True,
-                    verbose=0)
+                    verbose=vtag)
 
 
     ## train on a representation - more efficient
@@ -83,20 +83,20 @@ def autoencoder_model(X, Y):
                   epochs=100,
                   batch_size=60,
                   shuffle=True,
-                  verbose=0)
+                  verbose=vtag)
     
     return predictor
 
     
 
-def convolutional_model(X, Y):
+def convolutional_model(X, Y, vtag=2):
 
     ## do 1D convolutions
     ## this is less intense
     
     pass
 
-def convolutional_ae_model(X, Y):
+def convolutional_ae_model(X, Y, vtag=2):
 
     ## first auto-encode the data, then do convolutions
     
