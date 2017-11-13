@@ -50,10 +50,10 @@ def test_deep_pr_classification(graph,delimiter):
 
     ##### learn #####
     
-    rs = ShuffleSplit(10, test_size=0.5,random_state=42)
+    rs = ShuffleSplit(5, test_size=0.5,random_state=42)
     batch = 0        
-    threshold = 0.
-    models_results = defaultdict(list)
+    threshold = 0.5
+    models_results = []
     
     for train_index, test_index in rs.split(embedding['targets']):
         
@@ -73,17 +73,16 @@ def test_deep_pr_classification(graph,delimiter):
         preds[preds<threshold] =  0
         sc_micro = f1_score(test_Y, preds, average='micro')
         sc_macro = f1_score(test_Y, preds, average='macro')
-        models_results[ids].append((sc_micro,sc_macro))
-                    
-    for k,v in models_results.items():
+        models_results.append((sc_micro,sc_macro))
 
-        micros = []
-        macros = []
-        for x,y in v:
-            micros.append(x)
-            macros.append(y)
-
-        print("Model: {} micro: {} macro: {}".format(k,np.mean(micros),np.mean(macros)))
+    micros = []
+    macros = []
+    for v in models_results:
+        if v[1] > 0:
+            micros.append(v[0])
+            macros.append(v[1])
+        
+    print("Model: {} micro: {} macro: {}".format("base",np.mean(micros),np.mean(macros)))
     
     print("Finished test - deep learning..")
             

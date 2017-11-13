@@ -12,8 +12,8 @@ def baseline_dense_model(X, Y):
     layer_first = int(inshape*0.75)
     layer_second = int(inshape*0.5)
     layer_third = int(inshape*0.3)
+    layer_fourth = int(outshape*2)
 
-    print(layer_third)
     model = Sequential()
     model.add(Dense(inshape, input_dim=X.shape[1], activation='relu'))
     model.add(Dense(layer_first, activation='relu'))
@@ -21,6 +21,8 @@ def baseline_dense_model(X, Y):
     model.add(Dense(layer_second,activation='relu'))
     model.add(Dropout(0.1))
     model.add(Dense(layer_third,activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(layer_fourth,activation='relu'))
     model.add(Dropout(0.1))
     model.add(Dense(outshape, activation='sigmoid'))
 
@@ -52,19 +54,26 @@ def autoencoder_model(X, Y):
     autoencoder = Model(input_matrix, decoded)
     autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
     autoencoder.fit(X, X,
-                    epochs=100,
-                    batch_size=256,
+                    epochs=300,
+                    batch_size=80,
                     shuffle=True,
                     verbose=0)
 
 
     ## train on a representation - more efficient
     l2 = int(encoding_dim/2)
+    l3 = int(encoding_dim/3)
+    l4 = int(encoding_dim/4)
     inputs_2 = Input(shape=(inshape,))
     embedded_layer =  Dense(encoding_dim, activation='relu',
                     activity_regularizer=regularizers.l1(10e-5),name="encoded_layer")(inputs_2)
-    outlayer = Dense(outshape,activation="sigmoid")(embedded_layer)
-    
+    dropout1 = Dropout(0.2)(embedded_layer)
+    dense2 = Dense(l2,activation='relu')(dropout1)
+    dropout2 = Dropout(0.2)(dense2)
+    dense3 = Dense(l3,activation='relu')(dropout2)
+    dropout3 = Dropout(0.2)(dense3)
+    dense3 = Dense(l4,activation='relu')(dropout3)
+    outlayer = Dense(outshape,activation="sigmoid")(dense3)
     predictor = Model(inputs_2,outlayer)
 
     predictor.compile(optimizer='adam', loss='binary_crossentropy')
@@ -72,7 +81,7 @@ def autoencoder_model(X, Y):
     
     predictor.fit(X, Y,
                   epochs=100,
-                  batch_size=256,
+                  batch_size=60,
                   shuffle=True,
                   verbose=0)
     
