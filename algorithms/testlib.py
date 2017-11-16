@@ -73,6 +73,7 @@ def test_deep_pr_classification(graph,delimiter):
         preds[preds<threshold] =  0
         sc_micro = f1_score(test_Y, preds, average='micro')
         sc_macro = f1_score(test_Y, preds, average='macro')
+        print("This fold's scores; micro: {}, macro: {}".format(sc_micro,sc_macro))
         models_results.append((sc_micro,sc_macro))
 
     micros = []
