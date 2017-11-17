@@ -69,7 +69,7 @@ def test_deep_pr_classification(graph,delimiter):
 
         model = baseline_dense_model(train_X, train_Y,vtag=0)
         preds = model.predict(test_X)
-        preds[preds>=threshold] = 1
+        preds[preds>=threshold] = 13
         preds[preds<threshold] =  0
         sc_micro = f1_score(test_Y, preds, average='micro')
         sc_macro = f1_score(test_Y, preds, average='macro')
@@ -173,7 +173,7 @@ def test_classification(graph,delimiter):
 
     batch = 0
 
-    threshold = embedding['decision_threshold']
+    threshold = 0.5
     
     sel = preprocessing.StandardScaler()
 

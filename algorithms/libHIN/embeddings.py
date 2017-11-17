@@ -160,7 +160,7 @@ def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose
     print("Final shape:{}".format(graphlets.shape))
     return {'data' : graphlets,'targets' : hin.label_matrix, 'decision_threshold' : 0.5}
 
-def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,from_mat=False, outfile=None,feature_permutator_first="0000",deep_embedding=False):
+def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,from_mat=False, outfile=None,feature_permutator_first="0000",deep_embedding=False,reorder_by_communities=True):
 
     # fc_operators = []
     
@@ -330,6 +330,20 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
         ## this call returns a np/sp matrix of data + np label matrix. This is the best way to directly use the results, yet is memory-exhaustive O(m)~|V|^2 for a square matrix. Numpy can have problems with such sizes..
 
         ## this threshold specifies the data structure for final embeddings..
+        print("reordering..")
+        if reorder_by_communities:
+            partition_sizes = return_communities(graph)
+            from collections import defaultdict
+            groups = defaultdict(list)
+            for k,v in partition_sizes.items():
+                groups[v].append(k)
+
+            ordering = []
+            for k,v in groups.items():
+                for x in v:
+                    ordering.append(x)
+        
+        
         size_threshold = 100000
         if n > size_threshold:
             vectors = sp.csr_matrix((n, n))
@@ -358,7 +372,9 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
             hin.label_matrix = hin.label_matrix.todense()
         except:
             pass
-            
+
+        if reorder_by_communities:
+            vectors = vectors[:,ordering]
         return {'data' : vectors,'targets' : hin.label_matrix}
 
     
