@@ -4,9 +4,10 @@ from keras.models import Sequential
 from keras.models import Model
 from keras import regularizers
 from keras.layers.recurrent import LSTM
-from keras.layers import Input, Convolution2D, MaxPooling2D, Dense, Dropout, Activation, Flatten
+from keras.layers import Input, Conv1D, MaxPool1D, Dense, Dropout, Activation, Flatten
+from keras.utils import np_utils
 
-def baseline_dense_model(X, Y, vtag=2):
+def baseline_dense_model(X, Y, xtest ,vtag=2):
 
     inshape = int(X.shape[1])
     outshape = int(Y.shape[1])
@@ -41,7 +42,7 @@ def baseline_dense_model(X, Y, vtag=2):
     # Fit the model
     model.fit(X, Y, epochs=300, batch_size=60, verbose=vtag)
 
-    return model
+    return model.predict(xtest)
 
 
 def autoencoder_model(X, Y,vtag=2):
@@ -98,50 +99,34 @@ def autoencoder_model(X, Y,vtag=2):
 
     
 
-def convolutional_model(X, Y, vtag=2):
+def convolutional_model(X, Y, x_test, vtag=2):
 
-
-    batch_size = 32 # in each iteration, we consider 32 training examples at once
-    num_epochs = 200 # we iterate 200 times over the entire training set
-    kernel_size = 3 # we will use 3x3 kernels throughout
-    pool_size = 2 # we will use 2x2 pooling throughout
-    conv_depth_1 = 32 # we will initially have 32 kernels per conv. layer...
-    conv_depth_2 = 64 # ...switching to 64 after the first pooling layer
-    drop_prob_1 = 0.25 # dropout after pooling with probability 0.25
-    drop_prob_2 = 0.5 # dropout in the FC layer with probability 0.5
-    hidden_size = 512 # the FC layer will have 512 neurons
-
-    inp = Input(shape=(height, width, depth)) # depth goes last in TensorFlow back-end (first in Theano)
-    # Conv [32] -> Conv [32] -> Pool (with dropout on the pooling layer)
-    conv_1 = Convolution2D(conv_depth_1, (kernel_size, kernel_size), padding='same', activation='relu')(inp)
-    conv_2 = Convolution2D(conv_depth_1, (kernel_size, kernel_size), padding='same', activation='relu')(conv_1)
-    pool_1 = MaxPooling2D(pool_size=(pool_size, pool_size))(conv_2)
-    drop_1 = Dropout(drop_prob_1)(pool_1)
-    # Conv [64] -> Conv [64] -> Pool (with dropout on the pooling layer)
-    conv_3 = Convolution2D(conv_depth_2, (kernel_size, kernel_size), padding='same', activation='relu')(drop_1)
-    conv_4 = Convolution2D(conv_depth_2, (kernel_size, kernel_size), padding='same', activation='relu')(conv_3)
-    pool_2 = MaxPooling2D(pool_size=(pool_size, pool_size))(conv_4)
-    drop_2 = Dropout(drop_prob_1)(pool_2)
-    # Now flatten to 1D, apply FC -> ReLU (with dropout) -> softmax
-    flat = Flatten()(drop_2)
-    hidden = Dense(hidden_size, activation='relu')(flat)
-    drop_3 = Dropout(drop_prob_2)(hidden)
-    out = Dense(num_classes, activation='softmax')(drop_3)
+    nfeat= int(X.shape[1])
+    tshape = int(Y.shape[1])
     
-    model = Model(inputs=inp, outputs=out) # To define a model, just specify its input and output layers
+    import numpy as np
+    inp =  Input(shape=(nfeat, 1))
+    conv = Conv1D(filters=24, kernel_size=2)(inp)
+    pool = MaxPool1D(pool_size=2)(conv)
+    conv2 = Conv1D(filters=4, kernel_size=2)(pool)
+    pool2 = MaxPool1D(pool_size=2)(conv2)
+    flat = Flatten()(pool2)
+    dense = Dense(tshape)(flat)
+    model = Model(inp, dense)
+    model.compile(loss='mse', optimizer='adam')
 
-    model.compile(loss='categorical_crossentropy', # using the cross-entropy loss function
-                  optimizer='adam', # using the Adam optimiser
-                  metrics=['accuracy']) # reporting the accuracy
+    # get some data
+    X = np.expand_dims(X, axis=2)
 
-    model.fit(X_train, Y_train,                # Train the model using the training set...
-              batch_size=batch_size, epochs=num_epochs,
-              verbose=1, validation_split=0.1) # ...holding out 10% of the data for validation
+    # fit model
+    model.fit(X, Y,
+              epochs=300,
+              batch_size=60,
+              shuffle=True,
+              verbose=vtag)
 
-    ## do 1D convolutions
-    ## this is less intense
-    
-    pass
+    xtest = np.expand_dims(x_test,axis=2)
+    return model.predict(xtest)
 
 def convolutional_ae_model(X, Y, vtag=2):
 

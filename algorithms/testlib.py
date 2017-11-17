@@ -67,8 +67,7 @@ def test_deep_pr_classification(graph,delimiter):
 
         ## for m in models...
 
-        model = baseline_dense_model(train_X, train_Y,vtag=0)
-        preds = model.predict(test_X)
+        preds = convolutional_model(train_X, train_Y,test_X,vtag=0)        
         preds[preds>=threshold] = 13
         preds[preds<threshold] =  0
         sc_micro = f1_score(test_Y, preds, average='micro')
