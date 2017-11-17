@@ -50,7 +50,7 @@ def test_deep_pr_classification(graph,delimiter):
 
     ##### learn #####
     
-    rs = ShuffleSplit(5, test_size=0.5,random_state=42)
+    rs = ShuffleSplit(3, test_size=0.5,random_state=42)
     batch = 0        
     threshold = 0.5
     models_results = []
