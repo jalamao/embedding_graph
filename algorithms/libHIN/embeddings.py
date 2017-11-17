@@ -160,7 +160,7 @@ def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose
     print("Final shape:{}".format(graphlets.shape))
     return {'data' : graphlets,'targets' : hin.label_matrix, 'decision_threshold' : 0.5}
 
-def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,from_mat=False, outfile=None,feature_permutator_first="0000",deep_embedding=False,reorder_by_communities=True):
+def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,from_mat=False, outfile=None,feature_permutator_first="0000",deep_embedding=False,reorder_by_communities=False):
 
     # fc_operators = []
     
