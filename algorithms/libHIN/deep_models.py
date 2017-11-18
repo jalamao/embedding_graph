@@ -128,7 +128,7 @@ def convolutional_model(X, Y, x_test, vtag=2):
 
     # fit model
     model.fit(X, Y,
-              epochs=300,
+              epochs=350,
               batch_size=60,
               shuffle=True,
               verbose=vtag)
