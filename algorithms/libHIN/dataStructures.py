@@ -224,28 +224,6 @@ class HeterogeneousInformationNetwork:
         
         if parallel:
             ## parallel for edge type
-
-            # for item in generator:                
-            #     i += 1
-            #     tmp_container.append(item)
-            #     if i % bsize == 0:                
-            #         pinput = []
-            #         for j in tmp_container:
-            #             pinput.append((classes,universal_set,j,n))
-            #         results = pool.starmap(importance_calculator,pinput)
-                    
-            #         ## construct main matrix
-            #         for item,importances in zip(tmp_container,results):
-            #             importance = np.sum(importances, axis=0)
-            #             i1 = [self.node_indices[x] for x in item]
-            #             i2 = [[x] for x in i1]
-            #             to_add = sp.csr_matrix((nn, nn))
-            #             to_add[i2, i1] = importance            
-            #             to_add = to_add.tocsr() # this prevents memory leaks
-            #             matrix += to_add
-
-            #         tmp_container = []
-
             
             while True:
                 tmp_container = list(next(generator) for _ in range(bsize))                
@@ -303,11 +281,7 @@ class HeterogeneousInformationNetwork:
 
 
         ## hadamand product
-        ## probajmo z matrix = matrix.multiply(self.weight_matrix)
-        ## tukej bi hipoteticno uposteval utezi nekje..
-#        if name not in self.decomposed.keys():
-#            self.decomposed[name] = sp.csr_matrix((nn, nn))
-
+        
         self.decomposed[name] = matrix
 
     def midpoint_generator(self, node_sequence, edge_sequence):

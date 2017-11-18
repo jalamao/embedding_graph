@@ -38,6 +38,13 @@ def decompose_test(fname, delim):
         
     return embedding
 
+def test_weighted_embedding(graph,delimiter):
+
+    print("Weighted embedding test - weighted")
+    example_net = load_hinmine_object(graph,"---",weight_tag=True) ## add support for weight
+    print("embedding in progress..")
+    embedding = hinmine_embedding_pr(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=False)
+    
 
 def test_deep_pr_classification(graph,delimiter):
     
@@ -235,49 +242,7 @@ def test_automl(graph, delimiter):
 
     print("Finished test 2 - classification")
 
-def test_rnn(graph, delimiter):
 
-    from sklearn.model_selection import StratifiedKFold
-    from keras.models import Sequential
-    from keras.layers import Dense, Dropout
-    from sklearn.model_selection import KFold
-    from sklearn.metrics import f1_score
-    if ".mat" in graph:
-        example_net = load_hinmine_object(graph,delimiter) ## add support for weight
-        embedding = hinmine_embedding_pr(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=True)
-    else:        
-        embedding = decompose_test(graph,"---")
-        
-    cvscores = []
-
-    X = embedding['data']
-    Y = embedding['targets']
-    print(X.shape,Y.shape)
-    kf = KFold(n_splits=10,random_state=None, shuffle=False)
-    for train, test in kf.split(X):
-        # create model
-        model = Sequential()
-        model.add(Dense(X.shape[1], input_dim=X.shape[1], activation='relu'))
-        model.add(Dense(200, activation='relu'))
-        model.add(Dropout(0.2))
-        model.add(Dense(50,activation='relu'))
-        model.add(Dropout(0.2))
-        model.add(Dense(40,activation='relu'))
-        model.add(Dropout(0.1))
-        model.add(Dense(30, activation='relu'))
-        model.add(Dense(Y.shape[1], activation='sigmoid'))
-        # Compile model
-        model.compile(loss='binary_crossentropy', optimizer='adam')
-        # Fit the model
-        model.fit(X[train], Y[train], epochs=300, batch_size=40, verbose=1)
-        # evaluate the model
-        preds = model.predict(X[test])
-        preds[preds>=0.5] = 1
-        preds[preds<0.5] =  0
-        cvscores.append(f1_score(Y[test], preds, average='weighted'))
-        
-    print("Mean F1: {} and std: {}".format(np.mean(cvscores),np.std(cvscores)))
-    
 def test_embedding_raw():
 
     ## test simple embedding
@@ -385,6 +350,7 @@ if __name__ == "__main__":
     parser.add_argument("--test_write")
     parser.add_argument("--test_graphlet")
     parser.add_argument("--e2edl")
+    parser.add_argument("--test_weighted_embedding")
     
     args = parser.parse_args()
 
@@ -414,4 +380,6 @@ if __name__ == "__main__":
 
     if args.e2edl:
         test_deep_pr_classification(args.graph,args.delimiter)
+    if args.test_weighted_embedding:
+        test_weighted_embedding(args.graph,args.delimiter)
         
