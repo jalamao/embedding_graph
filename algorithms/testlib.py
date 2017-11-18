@@ -41,7 +41,7 @@ def decompose_test(fname, delim):
 def test_weighted_embedding(graph,delimiter):
 
     print("Weighted embedding test - weighted")
-    example_net = load_hinmine_object(graph,"---",weight_tag=True) ## add support for weight
+    example_net = load_hinmine_object(graph,"---",weight_tag="weight") ## add support for weight
     print("embedding in progress..")
     embedding = hinmine_embedding_pr(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=False)
     

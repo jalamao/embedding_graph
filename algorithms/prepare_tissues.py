@@ -14,13 +14,8 @@ for folder in os.listdir(tissue_folder_networks):
     with open(fpath) as fp:
         for line in fp:
             e1, e2 = line.strip().split()
-#            G.add_node(e1,type='gene')
-#            G.add_node(e2,type='gene')
-#            G.add_node(tname,type='tissue')
-#            G.add_edge(e1,tname,type='appears_in')
-#            G.add_edge(tname,e1,type='host_to')
-#            G.add_edge(e2,tname,type='appears_in')
-#            G.add_edge(tname,e2,type='host_to')
+            G.add_node(e1,type='gene')
+            G.add_node(e2,type='gene')
             G.add_edge(e1,e2,type='ground_truth',weight=1)
 
 print(nx.info(G))
