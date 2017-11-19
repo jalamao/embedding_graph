@@ -101,6 +101,8 @@ def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose
         if verbose:
             emit_state("Using decomposed networks..")
         n = hin.decomposed['decomposition'].shape[0]
+        ## if weighted != False;
+        ## elementwise product with the ground thruth network
         graph = stochastic_normalization(hin.decomposed['decomposition'])
     
     else:

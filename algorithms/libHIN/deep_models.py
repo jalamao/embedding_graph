@@ -103,24 +103,16 @@ def convolutional_model(X, Y, x_test, vtag=2):
 
     nfeat= int(X.shape[1])
     tshape = int(Y.shape[1])
-    p1shape = int(Y.shape[1]*2)
+#    p1shape = int(Y.shape[1]*2)
     
     import numpy as np
     inp =  Input(shape=(nfeat, 1))
-    conv = Conv1D(filters=500, kernel_size=5)(inp)
-    pool = MaxPool1D(pool_size=2)(conv)
-    conv2 = Conv1D(filters=300, kernel_size=4)(pool)
-    pool2 = MaxPool1D(pool_size=2)(conv2)
-    conv3 = Conv1D(filters=100, kernel_size=3)(pool2)
-    pool3 = MaxPool1D(pool_size=2)(conv3)
-    conv4 = Conv1D(filters=50, kernel_size=2)(pool3)
-    pool4 = MaxPool1D(pool_size=2)(conv4)
-    d1 = Dropout(0.25)(pool4)
-    flat = Flatten()(d1)
-    dense1 = Dense(p1shape)(flat)
-    d2 = Dropout(0.25)(dense1)
-    dense2 = Dense(tshape)(d2)
-    model = Model(inp, dense2)
+    conv = Conv1D(filters=150, kernel_size=15)(inp)
+    pool = MaxPool1D(pool_size=4)(conv)
+    conv2 = Conv1D(filters=300, kernel_size=15)(pool)
+    flat = Flatten()(conv2)
+    dense1 = Dense(tshape)(flat)
+    model = Model(inp, dense1)
     model.compile(loss='mse', optimizer='adam')
 
     # get some data
