@@ -107,10 +107,12 @@ def convolutional_model(X, Y, x_test, vtag=2):
     
     import numpy as np
     inp =  Input(shape=(nfeat, 1))
-    conv = Conv1D(filters=150, kernel_size=15)(inp)
+    conv = Conv1D(filters=15, kernel_size=5)(inp)
     pool = MaxPool1D(pool_size=4)(conv)
-    conv2 = Conv1D(filters=300, kernel_size=15)(pool)
-    flat = Flatten()(conv2)
+    conv2 = Conv1D(filters=15, kernel_size=5)(pool)
+    pool = MaxPool1D(pool_size=4)(conv2)
+    conv3 = Conv1D(filters=15, kernel_size=5)(pool2)
+    flat = Flatten()(conv3)
     dense1 = Dense(tshape)(flat)
     model = Model(inp, dense1)
     model.compile(loss='mse', optimizer='adam')
@@ -120,7 +122,7 @@ def convolutional_model(X, Y, x_test, vtag=2):
 
     # fit model
     model.fit(X, Y,
-              epochs=350,
+              epochs=650,
               batch_size=60,
               shuffle=True,
               verbose=vtag)
