@@ -1,7 +1,7 @@
 ## this tests the libHIN
 
 from libHIN.IO import load_hinmine_object, generate_cv_folds  ## gml_parser
-from libHIN.embeddings import hinmine_embedding_pr, hinmine_embedding_gp,hinmine_deep_gp ## basic embedding
+from libHIN.embeddings import hinmine_embedding_pr, hinmine_embedding_gp,hinmine_deep_gp,hinmine_embedding_n2v
 from libHIN.decomposition import * ## basic embedding
 from dataloaders import read_rfa, read_bitcoin, read_web
 from collections import defaultdict
@@ -37,6 +37,60 @@ def decompose_test(fname, delim):
     print(embedding['data'].shape,embedding['targets'].shape)
         
     return embedding
+
+def test_n2v_embedding(graph,delimiter):
+
+
+    if ".mat" in graph:
+        example_net = load_hinmine_object(graph, "---") ## add support for weight
+        embedding = hinmine_embedding_n2v(example_net, verbose=True, use_decomposition=False, from_mat=True)
+    else:        
+        example_net = load_hinmine_object(graph,"---") ## add support for weight    
+        ## split and re-weight
+        print("Beginning decomposition..")
+
+        decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None, parallel=True)    
+        ## embedding
+        print("Starting embedding..")
+        embedding = hinmine_embedding_n2v(decomposed,verbose=True)
+
+        print("Trainset dimension {}, testset dimension {}.".format(embedding['data'].shape,embedding['targets'].shape))
+
+        rs = ShuffleSplit(10, test_size=0.5,random_state=42)    
+        results = []
+        v = LogisticRegression(penalty="l2")
+        v = OneVsRestClassifier(v)
+        batch = 0
+        scores_micro = []
+        scores_macro = []
+        threshold = 0.5
+    
+        for train_index, test_index in rs.split(embedding['targets']):
+        
+            batch += 1        
+            print("Fold: {}".format(batch))
+            train_X = embedding['data'][train_index]
+            train_Y = embedding['targets'][train_index]
+            test_X = embedding['data'][test_index]
+            test_Y = embedding['targets'][test_index]
+            model_preds = v.fit(train_X,train_Y).predict_proba(test_X)
+            model_preds[model_preds > threshold] = 1
+            model_preds[model_preds <= threshold] = 0
+            sc_micro = f1_score(test_Y, model_preds, average='micro')
+            sc_macro = f1_score(test_Y, model_preds, average='macro')
+            scores_micro.append(sc_micro)
+            scores_macro.append(sc_macro)
+        
+        results.append(("LR, t:{}".format(str(threshold)),np.mean(scores_micro),np.mean(scores_macro)))
+
+        results = sorted(results, key=lambda tup: tup[2])
+    
+        for x in results:
+            cls, score_mi, score_ma = x
+            print("Classifier: {} performed with micro F1 score {} and macro F1 score {}".format(cls,score_mi,score_ma))
+
+        print("Finished test - n2v classification basic")    
+        
 
 def test_weighted_embedding(graph,delimiter):
 
@@ -410,6 +464,7 @@ if __name__ == "__main__":
     parser.add_argument("--e2edl")
     parser.add_argument("--test_weighted_embedding")
     parser.add_argument("--test_deepgp")
+    parser.add_argument("--test_n2v")
     
     args = parser.parse_args()
 
@@ -445,3 +500,6 @@ if __name__ == "__main__":
 
     if args.test_deepgp:
         test_deep_graphlet_classification(args.graph,args.delimiter)
+
+    if args.test_n2v:
+        test_n2v_embedding(args.graph,args.delimiter)

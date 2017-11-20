@@ -9,8 +9,9 @@ from .graphlet_calculation import count_graphlets_orca
 from .deep_features import deep_embedding_gp
 import networkx as nx
 from collections import Counter
-
+from .node2vec_interface import get_n2v_embedding
 ## compute communities
+
 def return_communities(net):
 
     G = nx.Graph()
@@ -55,7 +56,7 @@ def pr_kernel(index_row):
     else:
         return None
 
-def hinmine_embedding_n2v(hin,use_decomposition=True,return_type="matrix",verbose=False,generate_edge_features = None, from_mat=False,outfile=None,n2v_binary="../node2vec/./node2vec"):
+def hinmine_embedding_n2v(hin,use_decomposition=True,return_type="matrix",verbose=False,generate_edge_features = None, from_mat=False,outfile=None,n2v_binary="./node2vec"):
     
     assert isinstance(hin, HeterogeneousInformationNetwork)
     
