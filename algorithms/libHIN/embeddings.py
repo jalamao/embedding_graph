@@ -276,11 +276,12 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
 
     if simple_input: ## use as a class
 
+        n = len(hin.nodes())
         if simple_weighted != False:
-            graph = nx.to_scipy_sparse_matrix(hin,weight=simple_weighted)
+            graph = nx.to_scipy_sparse_matrix(hin,weight="weight")
         else:
             graph = nx.to_scipy_sparse_matrix(hin)
-
+            
         graph = stochastic_normalization(graph)
 
         
@@ -430,23 +431,6 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
     ## a se kar tu natrenira? Threshold tudi?
         
     if return_type == "matrix":
-
-        ## this call returns a np/sp matrix of data + np label matrix. This is the best way to directly use the results, yet is memory-exhaustive O(m)~|V|^2 for a square matrix. Numpy can have problems with such sizes..
-
-        ## this threshold specifies the data structure for final embeddings..
-        print("reordering..")
-        if reorder_by_communities:
-            partition_sizes = return_communities(graph)
-            from collections import defaultdict
-            groups = defaultdict(list)
-            for k,v in partition_sizes.items():
-                groups[v].append(k)
-
-            ordering = []
-            for k,v in groups.items():
-                for x in v:
-                    ordering.append(x)
-        
         
         size_threshold = 100000
         if n > size_threshold:
@@ -477,9 +461,10 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
         except:
             pass
 
-        if reorder_by_communities:
-            vectors = vectors[:,ordering]
-        return {'data' : vectors,'targets' : hin.label_matrix}
+        if simple_input:
+            return {'data' : vectors}
+        else:
+            return {'data' : vectors,'targets' : hin.label_matrix}
 
     
     elif return_type == "file":
@@ -519,14 +504,12 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
         
         return {'train_features': train_features, 'test_features': test_features}
 
-class himine_embedding:
-    def __init__(self, method, augmentation):
+class hinmine_embedding:
+    def __init__(self, method,augmentation="none"):
         self.method = method
         self.augmentation = augmentation
 
-    def learn_embedding(self, graph=G, is_weighted=True):
+    def learn_embedding(self, graph, is_weighted=True, edge_f=None, no_python=None):
         if self.method == "pagerank":
-            results = hinmine_embedding_pr(graph,use_decomposition=True, parallel=True,return_type="matrix", outfile=None,feature_permutator_first="0000",simple_input=True,simple_weighted=is_weighted)
-            return results['data']
-
-    
+            results = hinmine_embedding_pr(graph,use_decomposition=True, parallel=True,return_type="matrix", outfile=None,feature_permutator_first="0000",simple_input=True,simple_weighted=is_weighted,verbose=True)
+            return (results['data'],True)
