@@ -61,10 +61,14 @@ def test_deep_pr_classification(graph,delimiter):
     batch = 0        
     threshold = 0.5
     models_results = []
+
+    from sklearn.preprocessing import StandardScaler
+    scaler = StandardScaler()
+    embedding['data'] = scaler.fit_transform(embedding['data'])
     
     for train_index, test_index in rs.split(embedding['targets']):
         
-        batch += 1        
+        batch += 1
         print("Fold: {}".format(batch))
                        
         train_X = embedding['data'][train_index]

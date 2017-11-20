@@ -55,6 +55,51 @@ def pr_kernel(index_row):
     else:
         return None
 
+def hinmine_embedding_n2v(hin,use_decomposition=True,return_type="matrix",verbose=False,generate_edge_features = None, from_mat=False,outfile=None,n2v_binary="../node2vec/./node2vec"):
+    
+    assert isinstance(hin, HeterogeneousInformationNetwork)
+    
+    if use_decomposition:
+        if verbose:
+            emit_state("Using decomposed networks..")
+        n = hin.decomposed['decomposition'].shape[0]
+        ## if weighted != False;
+        ## elementwise product with the ground thruth network
+        graph = stochastic_normalization(hin.decomposed['decomposition'])
+    
+    else:
+
+        if from_mat:
+            graph = hin.graph
+            n = hin.graph.shape[0]
+            
+        else:
+            
+            if verbose:
+                emit_state("Using raw networks..")
+            
+            ## this works on a raw network.
+            n = len(hin.graph)
+            if hin.weighted != False:
+                converted = nx.to_scipy_sparse_matrix(hin.graph,weight=hin.weighted)
+            else:
+                converted = nx.to_scipy_sparse_matrix(hin.graph)
+
+            if verbose:
+                emit_state("Normalizing the adj matrix..")
+            graph = stochastic_normalization(converted) ## normalize
+
+    try:
+        targets = hin.label_matrix.todense() ## convert targets to dense representation..
+    except:
+        targets = hin.label_matrix
+        pass
+
+    n2v_embedded = get_n2v_embedding(graph,n2v_binary)
+    
+    ## get n2v embedding, pass on as result
+    return {'data' : n2v_embedded,'targets' : targets}
+    
 
 def generate_deep_embedding(X,target, depth=2):    
     
@@ -135,7 +180,7 @@ def hinmine_deep_gp(hin,use_decomposition=True,return_type="matrix",verbose=Fals
         targets = hin.label_matrix
         pass
 
-    graphlets_embedded = deep_embedding_gp(graphlets,targets,nlayers=10)
+    graphlets_embedded = deep_embedding_gp(graphlets,targets,nlayers=100)
 
     return {'data' : graphlets_embedded,'targets' : targets}
 

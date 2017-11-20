@@ -65,7 +65,6 @@ def deep_embedding_gp(gcounts,targets,nlayers=2,beta=0.02):
         print("Currently constructing the depth of {}".format(j))
         gcounts, ops = combine_features(gcounts,targets,beta)
         operator_trace.append(ops)
-        ## smoothing operator>
-
     print(operator_trace)
+    
     return gcounts
