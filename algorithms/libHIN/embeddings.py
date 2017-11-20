@@ -253,7 +253,7 @@ def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose
     print("Final shape:{}".format(graphlets.shape))
     return {'data' : graphlets,'targets' : hin.label_matrix, 'decision_threshold' : 0.5}
 
-def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,from_mat=False, outfile=None,feature_permutator_first="0000",deep_embedding=False,reorder_by_communities=False):
+def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="matrix",verbose=False, generate_edge_features = None,from_mat=False, outfile=None,feature_permutator_first="0000",deep_embedding=False,reorder_by_communities=False,simple_input=False,simple_weighted=False):
 
     # fc_operators = []
     
@@ -273,46 +273,57 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
         emit_state("Beginning embedding process..")
         
     global graph ## this holds the graph being processes
-    
-    # embed the input network to a term matrix    
-    assert isinstance(hin, HeterogeneousInformationNetwork)
 
-    ## .......................
-    ## Use decomposed network
-    ## .......................
-    
-    if use_decomposition:
-        if verbose:
-            emit_state("Using decomposed networks..")
-        n = hin.decomposed['decomposition'].shape[0]
-        graph = stochastic_normalization(hin.decomposed['decomposition'])
+    if simple_input: ## use as a class
 
-    ## .......................
-    ## Use raw, weighted network
-    ## .......................
-        
-    else:
-
-        if from_mat:
-
-            graph = stochastic_normalization(hin.graph)
-            n = hin.graph.shape[0]
-            
+        if simple_weighted != False:
+            graph = nx.to_scipy_sparse_matrix(hin,weight=simple_weighted)
         else:
-            
-            if verbose:
-                emit_state("Using raw networks..")
-            
-            ## this works on a raw network.
-            n = len(hin.graph)
-            if hin.weighted != False:
-                converted = nx.to_scipy_sparse_matrix(hin.graph,weight=hin.weighted)
-            else:
-                converted = nx.to_scipy_sparse_matrix(hin.graph)
+            graph = nx.to_scipy_sparse_matrix(hin)
 
+        graph = stochastic_normalization(graph)
+
+        
+    else: ## use within the hinmine
+        # embed the input network to a term matrix    
+        assert isinstance(hin, HeterogeneousInformationNetwork)
+
+        ## .......................
+        ## Use decomposed network
+        ## .......................
+    
+        if use_decomposition:
             if verbose:
-                emit_state("Normalizing the adj matrix..")
-            graph = stochastic_normalization(converted) ## normalize        
+                emit_state("Using decomposed networks..")
+                n = hin.decomposed['decomposition'].shape[0]
+                graph = stochastic_normalization(hin.decomposed['decomposition'])
+
+        ## .......................
+        ## Use raw, weighted network
+        ## .......................
+        
+        else:
+
+            if from_mat:
+
+                graph = stochastic_normalization(hin.graph)
+                n = hin.graph.shape[0]
+            
+            else:
+            
+                if verbose:
+                    emit_state("Using raw networks..")
+            
+                ## this works on a raw network.
+                n = len(hin.graph)
+                if hin.weighted != False:
+                    converted = nx.to_scipy_sparse_matrix(hin.graph,weight=hin.weighted)
+                else:
+                    converted = nx.to_scipy_sparse_matrix(hin.graph)
+
+                if verbose:
+                    emit_state("Normalizing the adj matrix..")
+                graph = stochastic_normalization(converted) ## normalize        
             
     ## .......................
     ## .......................
@@ -507,3 +518,15 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
         }
         
         return {'train_features': train_features, 'test_features': test_features}
+
+class himine_embedding:
+    def __init__(self, method, augmentation):
+        self.method = method
+        self.augmentation = augmentation
+
+    def learn_embedding(self, graph=G, is_weighted=True):
+        if self.method == "pagerank":
+            results = hinmine_embedding_pr(graph,use_decomposition=True, parallel=True,return_type="matrix", outfile=None,feature_permutator_first="0000",simple_input=True,simple_weighted=is_weighted)
+            return results['data']
+
+    
