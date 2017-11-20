@@ -110,7 +110,7 @@ def convolutional_model(X, Y, x_test, vtag=2):
     conv = Conv1D(filters=15, kernel_size=5)(inp)
     pool = MaxPool1D(pool_size=4)(conv)
     conv2 = Conv1D(filters=15, kernel_size=5)(pool)
-    pool = MaxPool1D(pool_size=4)(conv2)
+    pool2 = MaxPool1D(pool_size=4)(conv2)
     conv3 = Conv1D(filters=15, kernel_size=5)(pool2)
     flat = Flatten()(conv3)
     dense1 = Dense(tshape)(flat)
