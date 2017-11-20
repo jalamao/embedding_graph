@@ -6,6 +6,7 @@ import numpy as np
 import scipy.sparse as sp
 from .community_detection import *
 from .graphlet_calculation import count_graphlets_orca
+from .deep_features import deep_embedding_gp
 import networkx as nx
 from collections import Counter
 
@@ -92,6 +93,51 @@ def generate_deep_embedding(X,target, depth=2):
     
     return (X,encoder)
 
+
+def hinmine_deep_gp(hin,use_decomposition=True,return_type="matrix",verbose=False,generate_edge_features = None, from_mat=False,outfile=None,graphlet_binary="./orca"):
+
+    assert isinstance(hin, HeterogeneousInformationNetwork)
+    
+    if use_decomposition:
+        if verbose:
+            emit_state("Using decomposed networks..")
+        n = hin.decomposed['decomposition'].shape[0]
+        ## if weighted != False;
+        ## elementwise product with the ground thruth network
+        graph = stochastic_normalization(hin.decomposed['decomposition'])
+    
+    else:
+
+        if from_mat:
+            graph = hin.graph
+            n = hin.graph.shape[0]
+            
+        else:
+            
+            if verbose:
+                emit_state("Using raw networks..")
+            
+            ## this works on a raw network.
+            n = len(hin.graph)
+            if hin.weighted != False:
+                converted = nx.to_scipy_sparse_matrix(hin.graph,weight=hin.weighted)
+            else:
+                converted = nx.to_scipy_sparse_matrix(hin.graph)
+
+            if verbose:
+                emit_state("Normalizing the adj matrix..")
+            graph = stochastic_normalization(converted) ## normalize
+
+    graphlets = count_graphlets_orca(graph,graphlet_binary)
+    try:
+        targets = hin.label_matrix.todense() ## convert targets to dense representation..
+    except:
+        targets = hin.label_matrix
+        pass
+
+    graphlets_embedded = deep_embedding_gp(graphlets,targets,nlayers=10)
+
+    return {'data' : graphlets_embedded,'targets' : targets}
 
 def hinmine_embedding_gp(hin,use_decomposition=True,return_type="matrix",verbose=False,generate_edge_features = None, from_mat=False,outfile=None,graphlet_binary="./orca",deep_embedding=True):
 

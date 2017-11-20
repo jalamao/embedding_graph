@@ -1,0 +1,51 @@
+## inspired by Rossi et al., deep feature construction for graphs
+
+import numpy as np
+import itertools
+from sklearn.metrics import mutual_info_score as kl
+
+def hadamand_sum(v1,v2):
+    return np.add(v1,v2)
+
+
+def pairwise_kl(feature,targets):
+
+    total = 0    
+    for x in range(targets.shape[1]):
+        total+= kl(feature,targets[:,x])
+    return total
+
+def total_kl(features,targets):
+
+    
+    total_kl = 0
+    for k in range(features.shape[1]):
+        pkl = pairwise_kl(features[:,k],targets)
+        if pkl > total_kl:
+            total_kl = pkl
+    return total_kl
+            
+def combine_features(fdata,tar,beta):
+
+    dims = fdata.shape[1]
+    for comb in itertools.combinations(range(dims), 2):
+        copt = total_kl(fdata,tar)        
+        new_feature = hadamand_sum(fdata[comb[0]],fdata[comb[1]])
+        kl_tar = pairwise_kl(new_feature,tar)
+        kl_intra = beta*pairwise_kl(new_feature,fdata)
+        kl_total = kl_tar-kl_intra
+        if kl_total > copt:
+            fdata = np.concatenate(fdata,new_feature)
+            dims = fdata.shape[1]
+    
+    return fdata
+
+
+def deep_embedding_gp(gcounts,targets,nlayers=10,beta=0.1):
+
+    for j in range(nlayers):
+        print("Currently constructing the depth of {}".format(j))
+        gcounts = combine_features(gcounts,targets,beta)
+        ## smoothing operator>
+        
+    return gcounts
