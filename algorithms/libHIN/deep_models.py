@@ -109,14 +109,16 @@ def convolutional_model(X, Y, x_test, vtag=2):
     scaler = StandardScaler()
     
     inp =  Input(shape=(nfeat, 1))
-    conv = Conv1D(filters=15, kernel_size=5)(inp)
+    conv = Conv1D(filters=50, kernel_size=50)(inp)
     pool = MaxPool1D(pool_size=4)(conv)
-    conv2 = Conv1D(filters=15, kernel_size=5)(pool)
+    conv2 = Conv1D(filters=30, kernel_size=30)(pool)
+    pool2 = MaxPool1D(pool_size=4)(conv2
+    conv2 = Conv1D(filters=10, kernel_size=10)(pool2)
     pool2 = MaxPool1D(pool_size=4)(conv2)
     flat = Flatten()(pool2)
     dense1 = Dense(tshape)(flat)
-    d1 = Dropout(0.1)(dense1)
-    model = Model(inp, d1)
+#    d1 = Dropout(0.1)(dense1)
+    model = Model(inp, dense1)
     model.compile(loss='mse', optimizer='adam')
 
     # get some data
