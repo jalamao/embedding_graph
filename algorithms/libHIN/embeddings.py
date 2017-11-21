@@ -108,9 +108,10 @@ def generate_deep_embedding(X,target, depth=100):
     from keras.models import Model
     from keras import regularizers
 
-    i_shape = int(X.shape[1])
+    print(X.shape)
+    i_shape = int(X.shape[0])
     o_shape = int(target.shape[1])
-
+    print(i_shape,o_shape)
     encoding_dim = int(depth)
     
     # this is our input placeholder
@@ -500,11 +501,10 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
         except:
             pass
 
+        print(vectors.shape)
         if deep_embedding:
             vectors, encoder = generate_deep_embedding(vectors,hin.label_matrix)
 
-        # from scipy.sparse import csgraph
-        # vectors = csgraph.laplacian(vectors, normed=True) 
         if simple_input:
             return {'data' : vectors}
         else:
