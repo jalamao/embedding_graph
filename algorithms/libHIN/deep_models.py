@@ -28,6 +28,7 @@ def baseline_dense_model(X, Y, xtest ,vtag=2):
     model.add(Dense(layer_second,activation='relu'))
     model.add(Dense(layer_third,activation='relu'))
     model.add(Dropout(0.15))
+    model.add(Dense(layer_third,activation='relu'))
     model.add(Dropout(0.15))
     model.add(Dense(layer_fourth,activation='relu'))
     model.add(Dropout(0.15))
