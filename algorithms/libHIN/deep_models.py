@@ -112,9 +112,9 @@ def convolutional_model(X, Y, x_test, vtag=2):
     conv = Conv1D(filters=50, kernel_size=50)(inp)
     pool = MaxPool1D(pool_size=4)(conv)
     conv2 = Conv1D(filters=30, kernel_size=30)(pool)
-    pool2 = MaxPool1D(pool_size=4)(conv2
-    conv2 = Conv1D(filters=10, kernel_size=10)(pool2)
     pool2 = MaxPool1D(pool_size=4)(conv2)
+    conv3 = Conv1D(filters=10, kernel_size=10)(pool2)
+    pool2 = MaxPool1D(pool_size=4)(conv3)
     flat = Flatten()(pool2)
     dense1 = Dense(tshape)(flat)
 #    d1 = Dropout(0.1)(dense1)
