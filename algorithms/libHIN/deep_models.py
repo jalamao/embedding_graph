@@ -109,13 +109,15 @@ def convolutional_model(X, Y, x_test, vtag=2):
     scaler = StandardScaler()
     
     inp =  Input(shape=(nfeat, 1))
-    conv = Conv1D(filters=50, kernel_size=50)(inp)
+    conv = Conv1D(filters=100, kernel_size=50)(inp)
     pool = MaxPool1D(pool_size=4)(conv)
-    conv2 = Conv1D(filters=30, kernel_size=30)(pool)
+    conv2 = Conv1D(filters=50, kernel_size=30)(pool)
     pool2 = MaxPool1D(pool_size=4)(conv2)
-    conv3 = Conv1D(filters=10, kernel_size=10)(pool2)
-    pool2 = MaxPool1D(pool_size=4)(conv3)
-    flat = Flatten()(pool2)
+    conv3 = Conv1D(filters=50, kernel_size=10)(pool2)
+    pool3 = MaxPool1D(pool_size=4)(conv3)
+    conv4 = Conv1D(filters=50, kernel_size=5)(pool3)
+    pool4 = MaxPool1D(pool_size=4)(conv4)
+    flat = Flatten()(pool4)
     dense1 = Dense(tshape)(flat)
 #    d1 = Dropout(0.1)(dense1)
     model = Model(inp, dense1)
@@ -126,9 +128,9 @@ def convolutional_model(X, Y, x_test, vtag=2):
 
     # fit model
     model.fit(X, Y,
-              epochs=350,
+              epochs=500,
               batch_size=60,
-              shuffle=True,
+              shuffle=False,
               verbose=vtag)
 
     xtest = np.expand_dims(x_test,axis=2)

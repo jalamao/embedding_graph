@@ -49,7 +49,7 @@ def test_n2v_embedding(graph,delimiter):
         ## split and re-weight
         print("Beginning decomposition..")
 
-        decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None, parallel=True)    
+        decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None, parallel=True)
         ## embedding
         print("Starting embedding..")
         embedding = hinmine_embedding_n2v(decomposed,verbose=True)
@@ -93,16 +93,16 @@ def test_n2v_embedding(graph,delimiter):
         
 def test_laplacian_embedding_ff(graph,delimiter):
 
-
     if ".mat" in graph:
         example_net = load_hinmine_object(graph, "---") ## add support for weight
         embedding = hinmine_laplacian(example_net, verbose=True, use_decomposition=False, from_mat=True)
     else:        
-        example_net = load_hinmine_object(graph,"---") ## add support for weight    
+        example_net = load_hinmine_object(graph,"---") ## add support for weight
+
         ## spt and re-weight
         print("Beginning decomposition..")
+        decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None, parallel=True)
 
-        decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None, parallel=True)    
         ## embedding
         print("Starting embedding..")
         embedding = hinmine_laplacian(decomposed,verbose=True)
