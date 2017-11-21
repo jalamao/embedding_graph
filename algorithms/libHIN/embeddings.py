@@ -102,7 +102,7 @@ def hinmine_embedding_n2v(hin,use_decomposition=True,return_type="matrix",verbos
     return {'data' : n2v_embedded,'targets' : targets}
     
 
-def generate_deep_embedding(X,target, depth=2):    
+def generate_deep_embedding(X,target, depth=100):    
     
     from keras.layers import Input, Dense
     from keras.models import Model
@@ -111,7 +111,7 @@ def generate_deep_embedding(X,target, depth=2):
     i_shape = int(X.shape[1])
     o_shape = int(target.shape[1])
 
-    encoding_dim = int(X.shape[1]/depth)
+    encoding_dim = int(depth)
     
     # this is our input placeholder
     input_matrix = Input(shape=(i_shape,))
@@ -127,17 +127,15 @@ def generate_deep_embedding(X,target, depth=2):
     print("finished compilation")    
 
     autoencoder.fit(X, target,
-                    epochs=50,
-                    batch_size=256,
+                    epochs=150,
+                    batch_size=90,
                     shuffle=True,
-                    verbose=False)
+                    verbose=2)
 
-
-    X = encoder.predict(X)
-
-    print("Encoding stage complete, current shape: {}".format(X.shape))
     
-    return (X,encoder)
+    Xo = encoder.predict(X)
+    print("Encoding stage complete, current shape: {}".format(Xo.shape))
+    return (Xo,encoder)
 
 
 def hinmine_deep_gp(hin,use_decomposition=True,return_type="matrix",verbose=False,generate_edge_features = None, from_mat=False,outfile=None,graphlet_binary="./orca"):
@@ -452,16 +450,18 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
         from sklearn.linear_model import SGDClassifier
         from sklearn.model_selection import ShuffleSplit
         from sklearn.multiclass import OneVsRestClassifier
-        from sklearn.metrics import f1_score
-        
-        if deep_embedding:
-            vectors = generate_deep_embedding(vectors)
+        from sklearn.metrics import f1_score        
 
         try:
             hin.label_matrix = hin.label_matrix.todense()
         except:
             pass
 
+        if deep_embedding:
+            vectors, encoder = generate_deep_embedding(vectors,hin.label_matrix)
+
+        # from scipy.sparse import csgraph
+        # vectors = csgraph.laplacian(vectors, normed=True) 
         if simple_input:
             return {'data' : vectors}
         else:

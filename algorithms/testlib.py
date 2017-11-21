@@ -56,7 +56,7 @@ def test_n2v_embedding(graph,delimiter):
 
         print("Trainset dimension {}, testset dimension {}.".format(embedding['data'].shape,embedding['targets'].shape))
 
-        rs = ShuffleSplit(10, test_size=0.5,random_state=42)    
+        rs = ShuffleSplit(10, test_size=0.5,random_state=42)
         results = []
         v = LogisticRegression(penalty="l2")
         v = OneVsRestClassifier(v)
@@ -132,7 +132,8 @@ def test_deep_pr_classification(graph,delimiter):
 
         ## for m in models...
 
-        preds = convolutional_model(train_X, train_Y,test_X,vtag=0)        
+        preds = convolutional_model(train_X, train_Y,test_X,vtag=0)
+#        preds = baseline_dense_model(train_X, train_Y,test_X,vtag=0)
         preds[preds>=threshold] = 13
         preds[preds<threshold] =  0
         sc_micro = f1_score(test_Y, preds, average='micro')
@@ -273,7 +274,13 @@ def test_classification(graph,delimiter):
     
     if ".mat" in graph:
         example_net = load_hinmine_object(graph,delimiter) ## add support for weight
-        embedding = hinmine_embedding_pr(example_net, parallel=True,verbose=True,use_decomposition=False,from_mat=True)
+        embedding = hinmine_embedding_pr(example_net,
+                                         parallel=True,
+                                         verbose=True,
+                                         use_decomposition=False,
+                                         from_mat=True,
+                                         feature_permutator_first="0001",
+                                         deep_embedding=True)
     else:        
         embedding = decompose_test(graph,"---")
 
@@ -293,15 +300,15 @@ def test_classification(graph,delimiter):
 
     threshold = 0.5
     
-    sel = preprocessing.StandardScaler()
+    #sel = preprocessing.StandardScaler()
 
     scores_micro = []
     scores_macro = []
+    #embedding['data'] = sel.fit_transform(embedding['data'])
     
     for train_index, test_index in rs.split(embedding['targets']):
         
         batch += 1
-        transformer = sel.fit(embedding['data'][train_index])
         
         print("Fold: {}".format(batch))
         train_X = embedding['data'][train_index]
@@ -313,6 +320,7 @@ def test_classification(graph,delimiter):
         model_preds[model_preds <= threshold] = 0
         sc_micro = f1_score(test_Y, model_preds, average='micro')
         sc_macro = f1_score(test_Y, model_preds, average='macro')
+        print(sc_micro,sc_macro)
         scores_micro.append(sc_micro)
         scores_macro.append(sc_macro)
         

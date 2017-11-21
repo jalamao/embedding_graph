@@ -27,7 +27,7 @@ def get_n2v_embedding(graph, binary):
     print("Graph has {} edges and {} nodes.".format(number_of_edges,number_of_nodes))
     ## n e + for loop..
     f= open(tmp_graph,"w+")
-    f.write(str(number_of_nodes)+" "+str(number_of_edges)+"\n")
+    #f.write(str(number_of_nodes)+" "+str(number_of_edges)+"\n")
     for e in G.edges(data=True):
         f.write(str(e[0])+" "+str(e[1])+" "+str(e[2]['weight'])+"\n")
     f.close()
