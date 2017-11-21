@@ -127,11 +127,12 @@ def test_laplacian_embedding(graph,delimiter):
         train_Y = embedding['targets'][train_index]
         test_X = embedding['data'][test_index]
         test_Y = embedding['targets'][test_index]
-        model_preds = v.fit(train_X,train_Y).predict_proba(test_X)
+        model_preds = convolutional_model(train_X, train_Y,test_X,vtag=0)
         model_preds[model_preds > threshold] = 1
         model_preds[model_preds <= threshold] = 0
         sc_micro = f1_score(test_Y, model_preds, average='micro')
         sc_macro = f1_score(test_Y, model_preds, average='macro')
+        print(sc_micro,sc_macro)
         scores_micro.append(sc_micro)
         scores_macro.append(sc_macro)
         
