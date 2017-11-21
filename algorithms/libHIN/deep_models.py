@@ -111,11 +111,11 @@ def convolutional_model(X, Y, x_test, vtag=2):
     conv = Conv1D(filters=15, kernel_size=5)(inp)
     pool = MaxPool1D(pool_size=4)(conv)
     conv2 = Conv1D(filters=15, kernel_size=5)(pool)
-    flat = Flatten()(conv2)
+    pool2 = MaxPool1D(pool_size=4)(conv2)
+    flat = Flatten()(pool2)
     dense1 = Dense(tshape)(flat)
     d1 = Dropout(0.1)(dense1)
-    dense2 = Dense(tshape)(d1)
-    model = Model(inp, dense2)
+    model = Model(inp, d1)
     model.compile(loss='mse', optimizer='adam')
 
     # get some data

@@ -137,6 +137,49 @@ def generate_deep_embedding(X,target, depth=100):
     print("Encoding stage complete, current shape: {}".format(Xo.shape))
     return (Xo,encoder)
 
+def hinmine_laplacian(hin,use_decomposition=True,return_type="matrix",from_mat=False,verbose=True):
+    assert isinstance(hin, HeterogeneousInformationNetwork)
+    
+    if use_decomposition:
+        if verbose:
+            emit_state("Using decomposed networks..")
+        n = hin.decomposed['decomposition'].shape[0]
+        ## if weighted != False;
+        ## elementwise product with the ground thruth network
+        graph = hin.decomposed['decomposition']
+    
+    else:
+
+        if from_mat:
+            graph = hin.graph
+            n = hin.graph.shape[0]
+        else:
+            
+            if verbose:
+                emit_state("Using raw networks..")
+            
+            ## this works on a raw network.
+            n = len(hin.graph)
+            if hin.weighted != False:
+                graph = nx.to_scipy_sparse_matrix(hin.graph,weight=hin.weighted)
+            else:
+                graph = nx.to_scipy_sparse_matrix(hin.graph)
+
+            if verbose:
+                emit_state("Normalizing the adj matrix..")
+
+    from scipy.sparse import csgraph
+    vectors = csgraph.laplacian(graph, normed=True)
+    try:
+        targets = hin.label_matrix.todense() ## convert targets to dense representation..
+    except:
+        targets = hin.label_matrix
+        pass
+
+    return {'data' : vectors.todense(),'targets':targets}
+    
+
+                      
 
 def hinmine_deep_gp(hin,use_decomposition=True,return_type="matrix",verbose=False,generate_edge_features = None, from_mat=False,outfile=None,graphlet_binary="./orca"):
 
