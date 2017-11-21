@@ -102,22 +102,20 @@ def hinmine_embedding_n2v(hin,use_decomposition=True,return_type="matrix",verbos
     return {'data' : n2v_embedded,'targets' : targets}
     
 
-def generate_deep_embedding(X,target, depth=100):    
+def generate_deep_embedding(X, target, depth=100,reg=10e-5):    
     
     from keras.layers import Input, Dense
     from keras.models import Model
     from keras import regularizers
 
-    print(X.shape)
     i_shape = int(X.shape[0])
     o_shape = int(target.shape[1])
-    print(i_shape,o_shape)
     encoding_dim = int(depth)
     
     # this is our input placeholder
     input_matrix = Input(shape=(i_shape,))
-    encoded = Dense(encoding_dim, activation='relu',
-                    activity_regularizer=regularizers.l1(10e-5))(input_matrix)
+    encoded = Dense(encoding_dim, activation='selu',
+                    activity_regularizer=regularizers.l1(reg))(input_matrix)
     decoded = Dense(o_shape, activation='sigmoid')(encoded)
 
     # this model maps an input to its reconstruction
@@ -125,16 +123,17 @@ def generate_deep_embedding(X,target, depth=100):
     encoder = Model(input_matrix, encoded)
     autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
 
-    print("finished compilation")    
+    print("finished deep model compilation..")    
 
     autoencoder.fit(X, target,
-                    epochs=150,
+                    epochs=400,
                     batch_size=90,
-                    shuffle=True,
-                    verbose=2)
+                    shuffle=False,
+                    verbose=0)
 
     
     Xo = encoder.predict(X)
+    print(Xo)
     print("Encoding stage complete, current shape: {}".format(Xo.shape))
     return (Xo,encoder)
 
@@ -350,6 +349,8 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
 
             if from_mat:
 
+                if verbose:
+                    emit_state("Using matrix directly..")
                 graph = stochastic_normalization(hin.graph)
                 n = hin.graph.shape[0]
             
@@ -491,18 +492,15 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
                 else:
                     vectors[pr_vector[0],:] = pr_vector[1]
 
-        from sklearn.linear_model import SGDClassifier
-        from sklearn.model_selection import ShuffleSplit
-        from sklearn.multiclass import OneVsRestClassifier
-        from sklearn.metrics import f1_score        
 
         try:
             hin.label_matrix = hin.label_matrix.todense()
         except:
             pass
 
-        print(vectors.shape)
         if deep_embedding:
+            if verbose:
+                emit_state("Generating the deep embedding..")
             vectors, encoder = generate_deep_embedding(vectors,hin.label_matrix)
 
         if simple_input:
