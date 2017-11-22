@@ -103,14 +103,15 @@ def hinmine_embedding_n2v(hin,use_decomposition=True,return_type="matrix",verbos
     
 
 def generate_deep_embedding(X, target=None,
-                            compression=2,
+                            encoding_dim = 128,
                             reg=10e-5,
-                            sample=1,
-                            act="elu",
+                            sample=0.1,
+                            act="lrelu",
                             epoch=400,
                             bsize=90):
     
-    from keras.layers import Input, Dense, Activation, BatchNormalization
+    from keras.layers import Input, Dense, Activation
+    from keras.layers.advanced_activations import LeakyReLU
     from keras.models import Model
     from keras import regularizers
     from keras.callbacks import EarlyStopping
@@ -132,13 +133,17 @@ def generate_deep_embedding(X, target=None,
     ## sample
     i_shape = int(X.shape[0])
     o_shape = int(target.shape[1])
-    encoding_dim = int(i_shape/compression)
     
     # this is our input placeholder
     input_matrix = Input(shape=(i_shape,))
     encoded = Dense(encoding_dim,
                     activity_regularizer=regularizers.l1(reg))(input_matrix)
-    activation = Activation(act)(encoded)
+
+    if act == "lrelu":
+        activation = LeakyReLU()(encoded)
+    else:
+        activation = Activation(act)(encoded)
+        
     decoded = Dense(o_shape, activation='sigmoid')(activation)
 
     # this model maps an input to its reconstruction
