@@ -102,18 +102,32 @@ def hinmine_embedding_n2v(hin,use_decomposition=True,return_type="matrix",verbos
     return {'data' : n2v_embedded,'targets' : targets}
     
 
-def generate_deep_embedding(X, target, compression=2,reg=10e-5,sample=0.5,act="elu",epoch=400,bsize=90):    
+def generate_deep_embedding(X, target=None,
+                            compression=2,
+                            reg=10e-5,
+                            sample=1,
+                            act="elu",
+                            epoch=400,
+                            bsize=90):
     
-    from keras.layers import Input, Dense, Activation
+    from keras.layers import Input, Dense, Activation, BatchNormalization
     from keras.models import Model
     from keras import regularizers
-
+    from keras.callbacks import EarlyStopping
     
     ssize = int(X.shape[1]*sample)
-    subset = np.random.choice(X.shape[1], ssize)
+    idx = np.random.randint(X.shape[1], size=ssize)
 
-    tra = X#[subset,:]
-    tar = target#[subset,:]
+    if sample == 1:
+        tra = X
+    else:
+        tra = X[idx,:]
+        
+    if target.any():
+        if sample == 1:
+            tar = target
+        else:
+            tar = target[idx,:]
 
     ## sample
     i_shape = int(X.shape[0])
@@ -132,13 +146,14 @@ def generate_deep_embedding(X, target, compression=2,reg=10e-5,sample=0.5,act="e
     encoder = Model(input_matrix, encoded)
     autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
 
-    print("finished deep model compilation..")    
+    print("finished deep model compilation..")
+    stopping = EarlyStopping(monitor='loss', patience=10, verbose=0, mode='auto')
 
-    autoencoder.fit(tra, tar,
-                    epochs=epoch,
-                    batch_size=bsize,
-                    shuffle=False,
-                    verbose=0)
+    if target.any():
+        autoencoder.fit(tra,tar,epochs=epoch,batch_size=bsize,shuffle=True,verbose=0,callbacks=[stopping])
+        
+    else:
+        autoencoder.fit(tra,tra,epochs=epoch,batch_size=bsize,shuffle=True,verbose=0,callbacks=[stopping])
     
     Xo = encoder.predict(X)
     print("Encoding stage complete, current shape: {}".format(Xo.shape))
@@ -508,7 +523,7 @@ def hinmine_embedding_pr(hin,use_decomposition=True, parallel=True,return_type="
         if deep_embedding:
             if verbose:
                 emit_state("Generating the deep embedding..")
-            vectors, encoder = generate_deep_embedding(vectors,hin.label_matrix)
+            vectors, encoder = generate_deep_embedding(vectors, target = hin.label_matrix)
 
         if simple_input:
             return {'data' : vectors}
