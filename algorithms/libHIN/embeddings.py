@@ -110,7 +110,7 @@ def generate_deep_embedding(X, target, depth=100,reg=10e-5):
 
     i_shape = int(X.shape[0])
     o_shape = int(target.shape[1])
-    encoding_dim = int(depth)
+    encoding_dim = int(i_shape/2)
     
     # this is our input placeholder
     input_matrix = Input(shape=(i_shape,))
