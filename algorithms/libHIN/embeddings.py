@@ -103,9 +103,9 @@ def hinmine_embedding_n2v(hin,use_decomposition=True,return_type="matrix",verbos
     
 
 def generate_deep_embedding(X, target=None,
-                            encoding_dim = 128,
+                            encoding_dim = 160,
                             reg=10e-5,
-                            sample=0.5,
+                            sample=0.99,
                             act="lrelu",
                             epoch=400,
                             bsize=90):
@@ -119,6 +119,8 @@ def generate_deep_embedding(X, target=None,
     ssize = int(X.shape[1]*sample)
     idx = np.random.randint(X.shape[1], size=ssize)
 
+    print(len(idx))
+    
     if sample == 1:
         tra = X
     else:
@@ -133,6 +135,8 @@ def generate_deep_embedding(X, target=None,
     ## sample
     i_shape = int(X.shape[0])
     o_shape = int(target.shape[1])
+
+    print("Beginning training on {} and target {}".format(tra.shape,tar.shape))
     
     # this is our input placeholder
     input_matrix = Input(shape=(i_shape,))
