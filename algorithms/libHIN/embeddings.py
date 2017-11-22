@@ -102,7 +102,7 @@ def hinmine_embedding_n2v(hin,use_decomposition=True,return_type="matrix",verbos
     return {'data' : n2v_embedded,'targets' : targets}
     
 
-def generate_deep_embedding(X, target, compression=2,reg=10e-5,sample=0.5,act="elu"):    
+def generate_deep_embedding(X, target, compression=2,reg=10e-5,sample=0.5,act="elu",epoch=400,bsize=90):    
     
     from keras.layers import Input, Dense, Activation
     from keras.models import Model
@@ -135,14 +135,12 @@ def generate_deep_embedding(X, target, compression=2,reg=10e-5,sample=0.5,act="e
     print("finished deep model compilation..")    
 
     autoencoder.fit(tra, tar,
-                    epochs=400,
-                    batch_size=90,
+                    epochs=epoch,
+                    batch_size=bsize,
                     shuffle=False,
                     verbose=0)
-
     
     Xo = encoder.predict(X)
-    print(Xo)
     print("Encoding stage complete, current shape: {}".format(Xo.shape))
     return (Xo,encoder)
 
