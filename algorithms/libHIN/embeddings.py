@@ -103,14 +103,14 @@ def hinmine_embedding_n2v(hin,use_decomposition=True,return_type="matrix",verbos
     
 
 def generate_deep_embedding(X, target=None,
-                            encoding_dim = 160,
+                            encoding_dim = 1280,
                             reg=10e-5,
-                            sample=0.99,
+                            sample=0.9,
                             act="lrelu",
                             epoch=400,
                             bsize=90):
     
-    from keras.layers import Input, Dense, Activation
+    from keras.layers import Input, Dense, Activation,ActivityRegularization
     from keras.layers.advanced_activations import LeakyReLU
     from keras.models import Model
     from keras import regularizers
@@ -118,8 +118,6 @@ def generate_deep_embedding(X, target=None,
     
     ssize = int(X.shape[1]*sample)
     idx = np.random.randint(X.shape[1], size=ssize)
-
-    print(len(idx))
     
     if sample == 1:
         tra = X
@@ -138,19 +136,21 @@ def generate_deep_embedding(X, target=None,
 
     print("Beginning training on {} and target {}".format(tra.shape,tar.shape))
     
-    # this is our input placeholder
+    ## THE ARCHITECTURE ##
     input_matrix = Input(shape=(i_shape,))
-    encoded = Dense(encoding_dim,
-                    activity_regularizer=regularizers.l1(reg))(input_matrix)
-
+    encoded = Dense(encoding_dim)(input_matrix)
+    reg1 = ActivityRegularization(l1=reg)(encoded)
     if act == "lrelu":
-        activation = LeakyReLU()(encoded)
+        activation = LeakyReLU()(reg1)
     else:
-        activation = Activation(act)(encoded)
-        
+        activation = Activation(act)(reg1)
+
     decoded = Dense(o_shape, activation='sigmoid')(activation)
 
+    ## THE ARCHITECTURE ##
+    
     # this model maps an input to its reconstruction
+    
     autoencoder = Model(input_matrix, decoded)
     encoder = Model(input_matrix, encoded)
     autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
