@@ -102,21 +102,30 @@ def hinmine_embedding_n2v(hin,use_decomposition=True,return_type="matrix",verbos
     return {'data' : n2v_embedded,'targets' : targets}
     
 
-def generate_deep_embedding(X, target, depth=100,reg=10e-5):    
+def generate_deep_embedding(X, target, compression=2,reg=10e-5,sample=0.5,act="elu"):    
     
-    from keras.layers import Input, Dense
+    from keras.layers import Input, Dense, Activation
     from keras.models import Model
     from keras import regularizers
 
+    
+    ssize = int(X.shape[1]*sample)
+    subset = np.random.choice(X.shape[1], ssize)
+
+    tra = X#[subset,:]
+    tar = target#[subset,:]
+
+    ## sample
     i_shape = int(X.shape[0])
     o_shape = int(target.shape[1])
-    encoding_dim = int(i_shape/2)
+    encoding_dim = int(i_shape/compression)
     
     # this is our input placeholder
     input_matrix = Input(shape=(i_shape,))
-    encoded = Dense(encoding_dim, activation='selu',
+    encoded = Dense(encoding_dim,
                     activity_regularizer=regularizers.l1(reg))(input_matrix)
-    decoded = Dense(o_shape, activation='sigmoid')(encoded)
+    activation = Activation(act)(encoded)
+    decoded = Dense(o_shape, activation='sigmoid')(activation)
 
     # this model maps an input to its reconstruction
     autoencoder = Model(input_matrix, decoded)
@@ -125,7 +134,7 @@ def generate_deep_embedding(X, target, depth=100,reg=10e-5):
 
     print("finished deep model compilation..")    
 
-    autoencoder.fit(X, target,
+    autoencoder.fit(tra, tar,
                     epochs=400,
                     batch_size=90,
                     shuffle=False,
