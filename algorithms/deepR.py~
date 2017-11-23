@@ -36,27 +36,14 @@ def generate_deep_embedding(X, target=None,
     from keras.models import Model
     from keras import regularizers
     from keras.callbacks import EarlyStopping
-    
-    ssize = int(X.shape[1]*sample)
-    idx = np.random.randint(X.shape[1], size=ssize)
-    
-    if sample == 1:
-        tra = X
-    else:
-        tra = X[idx]
-        
-    if target.any():
-        if sample == 1:
-            tar = target
-        else:
-            tar = target[idx]
 
     ## sample
     i_shape = int(X.shape[0])
-    o_shape = int(target.shape[1])
-
-    print("Beginning training on {} and target {}".format(tra.shape,tar.shape))
-    
+    if target.any():
+        o_shape = int(target.shape[1])
+    else:
+        o_shape = i_shape ## an autoencoder
+        
     ## THE ARCHITECTURE ##
     input_matrix = Input(shape=(i_shape,))
     encoded = Dense(encoding_dim)(input_matrix)
@@ -65,21 +52,17 @@ def generate_deep_embedding(X, target=None,
         activation = LeakyReLU()(reg1)
     else:
         activation = Activation(act)(reg1)
-
     decoded = Dense(o_shape, activation='sigmoid')(activation)
     
-    # this model maps an input to its reconstruction
-    
+    # this model maps an input to its reconstruction    
     autoencoder = Model(input_matrix, decoded)
     encoder = Model(input_matrix, encoded)
     autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
-
-    print("finished deep model compilation, training..")
     stopping = EarlyStopping(monitor='loss', patience=20, verbose=verbose_tag, mode='auto')
 
     if target.any():
-        autoencoder.fit(tra,
-                        tar,
+        autoencoder.fit(X,
+                        target,
                         epochs=epoch,
                         batch_size=bsize,
                         shuffle=True,
@@ -87,8 +70,8 @@ def generate_deep_embedding(X, target=None,
                         callbacks=[stopping])
         
     else:
-        autoencoder.fit(tra,
-                        tra,
+        autoencoder.fit(X,
+                        X,
                         epochs=epoch,
                         batch_size=bsize,
                         shuffle=True,verbose=verbose_tag,
@@ -181,7 +164,7 @@ def pr_kernel(index_row):
     else:
         return None
 
-def hinmine_embedding_pr(network,targets, parallel=True,verbose=False,community_information=True,deep_embedding=False):
+def hinmine_embedding_pr(network,targets = False, parallel=True,verbose=False,community_information=True,deep_embedding=False):
 
     if verbose:
         emit_state("Beginning embedding process..")
@@ -189,7 +172,6 @@ def hinmine_embedding_pr(network,targets, parallel=True,verbose=False,community_
     global graph ## this holds the graph being processes
     n = network.shape[1]
     graph = stochastic_normalization(network) ## normalize        
-    targets = targets.todense()
     ## .......................
     ## .......................
     ## Graph embedding part
@@ -258,10 +240,51 @@ def hinmine_embedding_pr(network,targets, parallel=True,verbose=False,community_
     if deep_embedding:
         if verbose:
             emit_state("Generating the deep embedding..")
+#        targets = targets.todense()
         vectors = generate_deep_embedding(vectors, target = targets).predict(vectors)
 
 
     return {'data' : vectors,'targets' : targets}
+
+class DeepR:
+    def __init__(self, method,augmentation="none"):
+        self.method = method
+        self.augmentation = augmentation
+
+    def learn_embedding(self, graph, is_weighted=True, edge_f=None, no_python=None):
+        if self.method == "DeepR_default":
+            results = hinmine_embedding_pr(core_network,
+                                           targets = labels,
+                                           parallel=True,
+                                           verbose=True,
+                                           community_information=True,
+                                           deep_embedding=True)
+            
+        if self.method == "DeepR_no_community":
+            results = hinmine_embedding_pr(core_network,
+                                           targets = labels,
+                                           parallel=True,
+                                           verbose=True,
+                                           community_information=True,
+                                           deep_embedding=True)
+            
+        if self.method == "DeepR_no_deep":
+            results = hinmine_embedding_pr(core_network,
+                                           targets = labels,
+                                           parallel=True,
+                                           verbose=True,
+                                           community_information=True,
+                                           deep_embedding=False)
+            
+        if self.method == "DeepR_no_deep_no_community":
+            results = hinmine_embedding_pr(core_network,
+                                           targets = labels,
+                                           parallel=True,
+                                           verbose=True,
+                                           community_information=False,
+                                           deep_embedding=False)
+        return (results)
+
 
 if __name__ == "__main__":
 
@@ -270,6 +293,6 @@ if __name__ == "__main__":
     labels= mat['group']
     core_network= mat['network']
 
-    embeddings = hinmine_embedding_pr(core_network,labels, parallel=True,verbose=True,community_information=True,deep_embedding=True)
+    embeddings = hinmine_embedding_pr(core_network,targets = labels, parallel=True,verbose=True,community_information=True,deep_embedding=True)
     
     print(embeddings)
