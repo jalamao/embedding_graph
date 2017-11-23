@@ -1,56 +1,57 @@
-## compare all methods
-import argparse
-from gem.utils import graph_util
-from libHIN.IO import load_hinmine_object, generate_cv_folds  ## gml_parser
-from libHIN.embeddings import *
-from libHIN.decomposition import * ## basic embedding
-import networkx as nx
-from gem.embedding.gf       import GraphFactorization
-from gem.embedding.hope     import HOPE
-#from gem.embedding.lap      import LaplacianEigenmaps
-from gem.embedding.lle      import LocallyLinearEmbedding
-from gem.embedding.node2vec import node2vec
-from gem.embedding.sdne     import SDNE
-from time import time
+## benchmarks from the paper
 
-
-def decompose_and_test(fname):
-    example_net = load_hinmine_object(fname,"---") ## add support for weight    
-    ## split and re-weight
-    print("Beginning decomposition..")   
-    decomposed = hinmine_decompose(example_net,heuristic="idf", cycle=None, parallel=True)
-
-    G = nx.from_scipy_sparse_matrix(example_net.decomposed['decomposition'],edge_attribute="weight")
-    G = G.to_directed()
+def test_classification(graphfile):
     
-    models = []
-    # models.append(GraphFactorization())
-    # models.append(HOPE())
-    # models.append(LocallyLinearEmbedding())
-
-    models.append(node2vec(d=2,walk_len=4,num_walks=23,con_size=5,max_iter=1000,ret_p=0.2,inout_p=0.2))
+    ## direct decomposition
     
-#     models.append(SDNE(d=2, beta=5, alpha=1e-5, nu1=1e-6, nu2=1e-6, K=3,n_units=[50, 15,], rho=0.3, n_iter=50, xeta=0.01,n_batch=500,modelfile=['./intermediate/enc_model.json', './intermediate/dec_model.json'],weightfile=['./intermediate/enc_weights.hdf5', './intermediate/dec_weights.hdf5']))
 
-    models.append(hinmine_embedding(method="pagerank",augmentation="community"))
+    import scipy.io
+    mat = scipy.io.loadmat(graphfile)
+    labels= mat['group']
+    core_network= mat['network']
 
-    for method in models:
-        t1 = time()
+    ## train the embedding here..
 
-        # Learn embedding - accepts a networkx graph or file with edge list
-        X, t = method.learn_embedding(graph=G,edge_f=None, is_weighted=True, no_python=True)
+    
+    
+    ## 10 splits 50% train
+    
+    rs = ShuffleSplit(10, test_size=0.5,random_state=42)
+    
+    results = []
+
+    v = LogisticRegression(penalty="l2")
+    v = OneVsRestClassifier(v)
+
+    batch = 0
+    threshold = 0.5    
+    scores_micro = []
+    scores_macro = []
+    
+    for train_index, test_index in targets):
         
-        print ("time elapsed {}".format((time() - t1)))
+        batch += 1
         
+        print("Fold: {}".format(batch))
+        train_X = embedding['data'][train_index]
+        train_Y = embedding['targets'][train_index]
+        test_X = embedding['data'][test_index]
+        test_Y = embedding['targets'][test_index]
+        model_preds = v.fit(train_X,train_Y).predict_proba(test_X)
+        model_preds[model_preds > threshold] = 1
+        model_preds[model_preds <= threshold] = 0
+        sc_micro = f1_score(test_Y, model_preds, average='micro')
+        sc_macro = f1_score(test_Y, model_preds, average='macro')
+        print(sc_micro,sc_macro)
+        scores_micro.append(sc_micro)
+        scores_macro.append(sc_macro)
+        
+    results.append(("LR, t:{}".format(str(threshold)),np.mean(scores_micro),np.mean(scores_macro)))
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--test_all")
-    parser.add_argument("--graph")
-    args = parser.parse_args()
-
-    if args.test_all:
-        decompose_and_test(args.graph)
-
+    results = sorted(results, key=lambda tup: tup[2])
     
+    for x in results:
+        cls, score_mi, score_ma = x
+        print("Classifier: {} performed with micro F1 score {} and macro F1 score {}".format(cls,score_mi,score_ma))
+
+    print("Finished test - classification basic")

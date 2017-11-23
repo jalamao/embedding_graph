@@ -103,10 +103,10 @@ def hinmine_embedding_n2v(hin,use_decomposition=True,return_type="matrix",verbos
     
 
 def generate_deep_embedding(X, target=None,
-                            encoding_dim = 1280,
+                            encoding_dim = 50,
                             reg=10e-5,
-                            sample=0.9,
-                            act="lrelu",
+                            sample=1,
+                            act="tanh",
                             epoch=400,
                             bsize=90):
     
