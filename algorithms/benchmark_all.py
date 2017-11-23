@@ -9,7 +9,7 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn import svm
 from sklearn.model_selection import GridSearchCV
 
-def classification_benchmark(graphfile):
+def classification_benchmark(graphfile, outfile):
 
     dname = graphfile.split(".")[2].split("/")[-1]
     
@@ -21,9 +21,9 @@ def classification_benchmark(graphfile):
     ## train the embedding here..
     embedders = [
         DeepR("default"),
-        # DeepR("no_community"),
-        # DeepR("no_deep"),
-        # DeepR("no_deep_no_community")
+        DeepR("no_community"),
+        DeepR("no_deep"),
+        DeepR("no_deep_no_community")
     ]
 
     classifiers = {'LR' : LogisticRegression(penalty="l2"),'SVM' :svm.SVC(probability=True,C=10,kernel="rbf")}
@@ -39,7 +39,7 @@ def classification_benchmark(graphfile):
             scores_micro = []
             scores_macro = []
         
-            for train_index, test_index in rs.split(labels):        
+            for train_index, test_index in rs.split(labels):
                 batch += 1        
                 train_X = embedding['data'][train_index]
                 train_Y = embedding['targets'][train_index]
@@ -67,7 +67,9 @@ def classification_benchmark(graphfile):
     
     for x in results:
         cls,emb ,score_mi,std_mi ,score_ma, std_ma, dataname = x
-        print("{} {} {} ({}) {} ({}) {}".format(cls,emb,score_mi,std_mi,score_ma,std_ma,dataname)) ## to gre v outfajl
+        outstring = ("{} {} {} ({}) {} ({}) {}\n".format(cls,emb,score_mi,std_mi,score_ma,std_ma,dataname))
+        with open(outfile, "a") as myfile:
+            myfile.write(outstring)
 
 if __name__ == "__main__":
 
@@ -80,5 +82,4 @@ if __name__ == "__main__":
     parser.add_argument("--graph")
     parser.add_argument("--outfile")
     args = parser.parse_args()
-    classification_benchmark(args.graph)
-    
+    classification_benchmark(args.graph,args.outfile)
